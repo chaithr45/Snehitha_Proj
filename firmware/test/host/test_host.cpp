@@ -212,32 +212,46 @@ void test_ppg(const std::string &dir)
     check(max_hr < 0.01 && max_sp < 0.001, "HR and SpO2 match Python");
 }
 
-void test_fsm(const std::string &dir)
+void test_fsm(const std::string &dir, const char *file, const char *title)
 {
-    std::printf("Alert state machine (SafetyFSM)\n");
+    std::printf("%s\n", title);
     Reader r;
-    if (!r.open(dir + "/fsm.bin")) {
-        check(false, "open fsm.bin");
+    if (!r.open(dir + "/" + file)) {
+        check(false, "open FSM vectors");
         return;
     }
-    r.magic("SCF1");
+    r.magic("SCF2");
+    const uint32_t mode = r.get<uint32_t>();
     const uint32_t n_scen = r.get<uint32_t>();
-    const sc_fsm_cfg_t cfg = SC_FSM_CFG_DEFAULT;
+    sc_fsm_cfg_t cfg;
+    if (mode == 0) {
+        sc_fsm_cfg_phase1(&cfg);
+    } else {
+        sc_fsm_cfg_default(&cfg);
+    }
     uint64_t steps = 0, events = 0, bad = 0;
+    uint32_t per_event[16] = {0};
     for (uint32_t k = 0; k < n_scen; k++) {
         const uint32_t n = r.get<uint32_t>();
         sc_fsm_t f;
         sc_fsm_init(&f, &cfg);
         for (uint32_t i = 0; i < n; i++) {
+            sc_fsm_input_t in;
             const double t = r.get<double>();
-            const uint8_t fall = r.get<uint8_t>();
-            const float mot = r.get<float>();
-            const uint8_t btn = r.get<uint8_t>();
-            const float hr = r.get<float>(), sp = r.get<float>();
+            in.fall = r.get<uint8_t>();
+            in.motion_std_g = r.get<float>();
+            in.button = r.get<uint8_t>();
+            in.hr = r.get<float>();
+            in.spo2 = r.get<float>();
+            in.tilt_deg = r.get<float>();
+            in.worn = r.get<uint8_t>();
             const uint8_t exp = r.get<uint8_t>();
-            sc_event_t ev = sc_fsm_step(&f, t, fall, mot, btn, hr, sp);
+            const sc_event_t ev = sc_fsm_step(&f, t, &in);
             steps++;
-            events += exp != 0;
+            if (exp) {
+                events++;
+                per_event[exp & 15]++;
+            }
             if ((uint8_t)ev != exp) {
                 if (bad < 5) {
                     std::printf("  scenario %u step %u t=%.1f: C %s, Python code %u\n", k, i, t,
@@ -249,6 +263,13 @@ void test_fsm(const std::string &dir)
     }
     std::printf("  scenarios %u | steps %llu | events %llu | mismatches %llu\n", n_scen,
                 (unsigned long long)steps, (unsigned long long)events, (unsigned long long)bad);
+    std::printf("  events:");
+    for (int e = 1; e < 16; e++) {
+        if (per_event[e]) {
+            std::printf(" %s %u;", sc_event_name((sc_event_t)e), per_event[e]);
+        }
+    }
+    std::printf("\n");
     check(n_scen > 0 && events > 0, "vectors contain scenarios with events");
     check(bad == 0, "every event matches Python at the same step");
 }
@@ -264,7 +285,8 @@ int main(int argc, char **argv)
     const char *dump = (argc >= 4 && std::strcmp(argv[2], "--dump-windows") == 0) ? argv[3] : nullptr;
     test_imu(argv[1], dump);
     test_ppg(argv[1]);
-    test_fsm(argv[1]);
+    test_fsm(argv[1], "fsm.bin", "Alert state machine, Phase 1 features (vs phase1_pipeline.SafetyFSM)");
+    test_fsm(argv[1], "fsm2.bin", "Alert state machine, man-down + motion-aware vitals (vs device_model.SafetyFSM2)");
     std::printf("%s (%d failed check%s)\n", g_failures ? "FAILED" : "ALL PASSED", g_failures,
                 g_failures == 1 ? "" : "s");
     return g_failures ? 1 : 0;

@@ -21,7 +21,9 @@ static void task(void *arg)
     (void)arg;
     uint32_t tick = 0;
     for (;;) {
-        const uint32_t ms = (tick++ * TICK_MS) % 1000;
+        const uint32_t ms = (tick * TICK_MS) % 1000;
+        const uint32_t ms3 = (tick * TICK_MS) % 3000;
+        tick++;
         int buzz = 0, vib = 0;
         switch (s_mode) {
         case ANN_PENDING:   // 200 ms beep every 500 ms, continuous vibration
@@ -31,6 +33,9 @@ static void task(void *arg)
         case ANN_ALERT:     // 100 ms on / 100 ms off, vibration pulses
             buzz = (ms % 200) < 100;
             vib = ms < 500;
+            break;
+        case ANN_ACKED:     // two short beeps every 3 s: help is on the way
+            buzz = ms3 < 100 || (ms3 >= 200 && ms3 < 300);
             break;
         default:
             break;

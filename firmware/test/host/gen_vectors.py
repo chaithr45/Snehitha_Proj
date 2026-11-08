@@ -157,7 +157,8 @@ def ev_code(text):
     raise ValueError(text)
 
 
-def fsm_scenarios(P):
+def fsm_phase1_scenarios(P, DM):
+    """Random + demo scenarios checked against the original Phase 1 SafetyFSM."""
     rng = np.random.default_rng(11)
     scen = []
     for k in range(300):
@@ -172,7 +173,7 @@ def fsm_scenarios(P):
             sp = float(np.clip(sp + rng.normal(0, 1), 80, 100))
             h, s = (math.nan, math.nan) if rng.random() < 0.05 else (hr, sp)
             steps.append((t, bool(rng.random() < 0.04), 0.01 if still else 0.2,
-                          bool(rng.random() < 0.03), h, s))
+                          bool(rng.random() < 0.03), h, s, 0.0, True))
         scen.append(steps)
     # the four fsm_demo() scenarios, step for step
     demo = {"fall": (5, None, True, 88, 97), "cancel": (5, 8, False, 85, 98),
@@ -184,28 +185,65 @@ def fsm_scenarios(P):
             fall = fall_at is not None and abs(t - fall_at) < 1e-6
             moving = 0.01 if (still and fall_at and t > fall_at) else 0.2
             press = press_at is not None and abs(t - press_at) < 1e-6
-            steps.append((t, fall, moving, press, float(hr), float(sp)))
+            steps.append((t, fall, moving, press, float(hr), float(sp), 0.0, True))
         scen.append(steps)
     out = []
     for steps in scen:
-        fsm = P.SafetyFSM()
+        fsm, fsm2 = P.SafetyFSM(), DM.SafetyFSM2.phase1()
         exp = []
-        for t, fall, mot, btn, h, s in steps:
+        for t, fall, mot, btn, h, s, tilt, worn in steps:
             before = len(fsm.log)
-            fsm.step(t, fall, mot, btn, h, s)
-            exp.append(ev_code(fsm.log[-1][1]) if len(fsm.log) > before else 0)
+            fsm.step(t, fall, np.float32(mot), btn, np.float32(h), np.float32(s))
+            e = ev_code(fsm.log[-1][1]) if len(fsm.log) > before else 0
+            e2 = fsm2.step(t, fall, np.float32(mot), btn, np.float32(h), np.float32(s), tilt, worn)
+            assert e == e2, "SafetyFSM2.phase1() must equal the Phase 1 SafetyFSM"
+            exp.append(e)
         out.append((steps, exp))
     return out
 
 
-def write_fsm(path, scen):
+def fsm_v2_scenarios(DM):
+    """Long scenarios exercising man-down (posture, stillness), vitals gating, worn flag."""
+    rng = np.random.default_rng(23)
+    motion_levels = [0.005, 0.015, 0.03, 0.2, 0.6]
+    scen = []
+    for k in range(400):
+        steps, n = [], int(rng.integers(200, 900))
+        level, lying, worn = 1, False, True
+        hr, sp = 80.0, 97.0
+        for i in range(n):
+            t = i * 0.5
+            if rng.random() < 0.02:
+                level = int(rng.choice(len(motion_levels), p=[0.3, 0.25, 0.15, 0.2, 0.1]))
+            if rng.random() < 0.01:
+                lying = not lying
+            if rng.random() < 0.003:
+                worn = not worn
+            hr = float(np.clip(hr + rng.normal(0, 5), 30, 200))
+            sp = float(np.clip(sp + rng.normal(0, 0.8), 80, 100))
+            h, s = (math.nan, math.nan) if (not worn or rng.random() < 0.03) else (hr, sp)
+            mot = motion_levels[level] * float(rng.uniform(0.7, 1.3))
+            tilt = float(rng.uniform(70, 100) if lying else rng.uniform(0, 40))
+            steps.append((t, bool(rng.random() < 0.005), mot, bool(rng.random() < 0.004), h, s, tilt, worn))
+        scen.append(steps)
+    out = []
+    for steps in scen:
+        fsm = DM.SafetyFSM2()
+        exp = [fsm.step(t, fall, np.float32(mot), btn, np.float32(h), np.float32(s), np.float32(tilt), worn)
+               for t, fall, mot, btn, h, s, tilt, worn in steps]
+        out.append((steps, exp))
+    return out
+
+
+def write_fsm(path, scen, mode):
+    """mode 0: Phase 1 feature set (sc_fsm_cfg_phase1), 1: device defaults (sc_fsm_cfg_default)."""
     with open(path, "wb") as f:
-        f.write(b"SCF1")
-        f.write(struct.pack("<I", len(scen)))
+        f.write(b"SCF2")
+        f.write(struct.pack("<II", mode, len(scen)))
         for steps, exp in scen:
             f.write(struct.pack("<I", len(steps)))
-            for (t, fall, mot, btn, h, s), e in zip(steps, exp):
-                f.write(struct.pack("<dBfBffB", t, fall, mot, btn, h, s, e))
+            for (t, fall, mot, btn, h, s, tilt, worn), e in zip(steps, exp):
+                f.write(struct.pack("<dBfBfffBB", t, fall, mot, btn, h, s, tilt, worn, e))
 
 
 def main():
@@ -235,10 +273,13 @@ def main():
     cases = ppg_cases(P)
     write_ppg(os.path.join(a.out, "ppg.bin"), cases)
     print(f"ppg.bin: {len(cases)} PPG recordings")
-    scen = fsm_scenarios(P)
-    write_fsm(os.path.join(a.out, "fsm.bin"), scen)
-    print(f"fsm.bin: {len(scen)} scenarios, {sum(len(s) for s, _ in scen)} steps, "
-          f"{sum(e != 0 for _, ex in scen for e in ex)} events")
+    sys.path.insert(0, os.path.join(os.path.abspath(a.repo), "firmware", "tools"))
+    import device_model as DM
+    for name, scen, mode in (("fsm.bin", fsm_phase1_scenarios(P, DM), 0), ("fsm2.bin", fsm_v2_scenarios(DM), 1)):
+        write_fsm(os.path.join(a.out, name), scen, mode)
+        evs = [e for _, ex in scen for e in ex if e]
+        print(f"{name}: {len(scen)} scenarios, {sum(len(s) for s, _ in scen)} steps, {len(evs)} events "
+              f"({', '.join(f'{DM.EV_NAMES[c]} {evs.count(c)}' for c in sorted(set(evs)))})")
 
 
 if __name__ == "__main__":

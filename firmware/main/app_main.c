@@ -32,14 +32,20 @@ static void imu_task(void *arg)
 {
     (void)arg;
     static float buf[IMU_FIFO_MAX][6];
+    uint32_t gap_ms = 0;
     TickType_t last = xTaskGetTickCount();
     for (;;) {
         vTaskDelayUntil(&last, pdMS_TO_TICKS(100));   // ~5 samples per read; FIFO holds 1.7 s
         const int n = mpu6050_read_fifo(buf, IMU_FIFO_MAX);
-        if (n < 0) {
-            ESP_LOGW(TAG, "MPU6050 read error");
+        if (n <= 0) {
+            if (n < 0) {
+                ESP_LOGW(TAG, "MPU6050 read error");
+            }
+            gap_ms += 100;
+            pipeline_report_imu_gap(gap_ms);   // >= 2 s without data: DEVICE_FAULT to the supervisor
             continue;
         }
+        gap_ms = 0;
         for (int i = 0; i < n; i++) {
             pipeline_push_imu(buf[i]);
         }

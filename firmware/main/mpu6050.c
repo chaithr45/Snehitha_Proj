@@ -105,7 +105,7 @@ esp_err_t mpu6050_init(i2c_master_bus_handle_t bus, const char *axes)
     return ESP_OK;
 }
 
-void mpu6050_convert(const int16_t raw[6], float out[6])
+void mpu6050_convert(const int16_t *raw, float out[6])
 {
     float phys[6];
     for (int c = 0; c < 3; c++) {

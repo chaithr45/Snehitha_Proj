@@ -17,6 +17,7 @@
 
 #if CONFIG_SAFETY_MODEL_SELFTEST
 #include "selftest_data.h"
+static_assert(SELFTEST_LEN == FALL_WIN * FALL_CH, "self-test data was generated for another model shape");
 #endif
 
 namespace {
@@ -107,7 +108,7 @@ extern "C" bool fall_model_selftest(void)
     for (int i = 0; i < SELFTEST_N; i++) {
         int8_t q = 0;
         const int64_t t0 = esp_timer_get_time();
-        fall_model_run(SELFTEST_IN[i], &q);
+        fall_model_run(&SELFTEST_IN[i * SELFTEST_LEN], &q);
         t_total += esp_timer_get_time() - t0;
         const int d = std::abs((int)q - (int)SELFTEST_OUT[i]);
         exact += d == 0;

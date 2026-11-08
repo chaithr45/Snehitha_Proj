@@ -36,6 +36,26 @@ menu "Worker safety monitor"
             Example: a board mounted with Y pointing up -> "+X-Y-Z".
             The same mapping is applied to the gyroscope.
 
+    menu "Alert rules"
+        config SAFETY_MAN_DOWN_LYING_S
+            int "Man-down: seconds lying motionless before the pre-alarm (0 = off)"
+            default 30
+            help
+                Catches a collapse without an impact (fainting, gas, heat stroke) that the
+                fall model cannot see. "Lying" = body tilted more than 60 degrees.
+
+        config SAFETY_MAN_DOWN_UPRIGHT_S
+            int "Man-down: seconds upright and motionless before the pre-alarm (0 = off)"
+            default 180
+
+        config SAFETY_VITALS_MOTION_MG
+            int "Ignore HR / SpO2 while the mean motion over 10 s is above [milli-g] (0 = never)"
+            default 350
+            help
+                Vigorous movement corrupts the PPG signal (it can read a false 160 bpm while
+                jogging). Vitals alerts are paused while the worker moves this much.
+    endmenu
+
     config SAFETY_BUTTON_LONG_PRESS_MS
         int "Long press (clear an alert) duration [ms]"
         default 3000
@@ -94,7 +114,10 @@ menu "Worker safety monitor"
 
     config SAFETY_TENSOR_ARENA_KB
         int "TFLite Micro tensor arena [KB]"
-        default 32
+        default 16
+        help
+            Measured in QEMU: 7.3 KB used on the ESP32, 10.3 KB on the ESP32-S3
+            (its vector kernels need more scratch space).
 
     config SAFETY_MODEL_SELFTEST
         bool "Check the model against reference outputs at boot"

@@ -12,7 +12,7 @@
 esp_err_t mpu6050_init(i2c_master_bus_handle_t bus, const char *axes);
 
 // Convert raw counts (ax ay az gx gy gz) to g / deg/s in the KFall frame.
-void mpu6050_convert(const int16_t raw[6], float out[6]);
+void mpu6050_convert(const int16_t *raw, float out[6]);   // raw: 6 values
 
 // Read all complete samples waiting in the FIFO (at most max). Returns the number
 // of samples, or -1 on an I2C error. A FIFO overflow resets the FIFO and returns 0.

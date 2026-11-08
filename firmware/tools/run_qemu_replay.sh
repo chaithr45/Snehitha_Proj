@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 # End-to-end firmware test in QEMU, no hardware needed.
 #
-#   esp32   : replay build -> QEMU with emulated Ethernet -> supervisor.py on the host
+#   esp32   : replay build -> QEMU with emulated Ethernet -> supervisor.py on the host.
+#             The supervisor starts SUP_DELAY_S after the firmware, so the first alerts
+#             can only get through by store-and-forward; it acknowledges alerts itself.
 #   esp32s3 : replay build -> QEMU (no network model for this chip: alerts are only logged)
 #
 # Passes when the firmware's events match the Python device model, TFLite Micro
-# reproduces the TFLite reference outputs, and (esp32) every alert reached the supervisor.
+# reproduces the TFLite reference outputs, and (esp32) every message reached the
+# supervisor in order and every alert was acknowledged back to the device.
 #
 # Needs an ESP-IDF environment (. $IDF_PATH/export.sh) with qemu-xtensa installed:
 #   python $IDF_PATH/tools/idf_tools.py install qemu-xtensa && . $IDF_PATH/export.sh
@@ -16,6 +19,7 @@ TARGET=${1:-esp32}
 BUILD=build_qemu_$TARGET
 PORT=8080
 TIMEOUT_S=${TIMEOUT_S:-600}
+SUP_DELAY_S=${SUP_DELAY_S:-20}
 
 DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.qemu"
 NET=1
@@ -43,7 +47,9 @@ EOF
 
 NIC=(-nic none)
 if [ $NET -eq 1 ]; then
-    python3 ../tools/supervisor.py --port "$PORT" --log supervisor.jsonl > supervisor.log 2>&1 &
+    # supervisor comes up late on purpose: alerts must wait in the device's queue
+    (sleep "$SUP_DELAY_S"; exec python3 ../tools/supervisor.py --port "$PORT" --log supervisor.jsonl \
+        --auto-ack 1 > supervisor.log 2>&1) &
     SUP=$!
     NIC=(-nic user,model=open_eth)
 fi
@@ -74,10 +80,22 @@ if [ $NET -eq 1 ]; then
     cat supervisor.log
     python3 - <<'EOF' || status=1
 import json, sys
-events = [json.loads(l).get("event") for l in open("supervisor.jsonl") if '"kind": "alert"' in l]
-print("supervisor received alerts:", events)
-need = ["ALERT_FALL", "ALERT_CLEARED", "ALERT_VITALS", "ALERT_CLEARED"]
-sys.exit(0 if events == need else 1)
+recs = [json.loads(l) for l in open("supervisor.jsonl")]
+alerts = [r for r in recs if r["kind"] == "alert"]
+acks = {r["id"] for r in recs if r["kind"] == "ack"}
+events = [a["event"] for a in alerts]
+print("supervisor received, in order:", events)
+need = ["ALERT_FALL", "ALERT_CLEARED", "ALERT_VITALS", "ALERT_CLEARED", "ALERT_MAN_DOWN", "ALERT_CLEARED",
+        "DEVICE_FAULT", "DEVICE_OK"]
+needs_ack = [a["id"] for a in alerts if a.get("needs_ack")]
+print("acknowledged:", sorted(acks), "of", needs_ack)
+fall = next((a for a in alerts if a["event"] == "ALERT_FALL"), {})
+md = next((a for a in alerts if a["event"] == "ALERT_MAN_DOWN"), {})
+print(f"ALERT_FALL posture={fall.get('posture')} impact_g={fall.get('impact_g')}; "
+      f"ALERT_MAN_DOWN posture={md.get('posture')}")
+ok = (events == need and len({a["id"] for a in alerts}) == len(alerts) and set(needs_ack) == acks
+      and md.get("posture") == "lying" and fall.get("impact_g", 0) > 1.5)
+sys.exit(0 if ok else 1)
 EOF
 fi
 [ $status -eq 0 ] && echo "QEMU END-TO-END TEST PASSED ($TARGET)" || echo "QEMU END-TO-END TEST FAILED ($TARGET)"

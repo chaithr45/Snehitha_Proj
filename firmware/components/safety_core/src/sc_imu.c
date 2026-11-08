@@ -99,6 +99,36 @@ float sc_window_motion_std(const sc_window_t *w, int n)
     return var > 0.0 ? (float)sqrt(var) : 0.0f;
 }
 
+float sc_window_tilt_deg(const sc_window_t *w, int n)
+{
+    if (n > SC_WIN) {
+        n = SC_WIN;
+    }
+    if ((uint32_t)n > w->count) {
+        n = (int)w->count;
+    }
+    if (n < 1) {
+        return 0.0f;
+    }
+    double m[3] = {0.0, 0.0, 0.0};
+    for (int i = 0; i < n; i++) {
+        const float *x = w->buf[(w->count - 1u - (uint32_t)i) % SC_WIN];
+        for (int c = 0; c < 3; c++) {
+            m[c] += x[c];
+        }
+    }
+    for (int c = 0; c < 3; c++) {
+        m[c] /= n;
+    }
+    const double norm = sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
+    if (norm < 1e-6) {
+        return 0.0f;
+    }
+    double cosv = -m[1] / norm;   // +Y points down when upright (KFall frame)
+    cosv = cosv > 1.0 ? 1.0 : (cosv < -1.0 ? -1.0 : cosv);
+    return (float)(acos(cosv) * (180.0 / 3.14159265358979323846));
+}
+
 void sc_detector_init(sc_detector_t *d, float threshold, int consec)
 {
     d->threshold = threshold;
