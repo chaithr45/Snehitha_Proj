@@ -1,24 +1,24 @@
 # Phase 1 Results -- kfall (subject-independent test set)
 
-Model: 1D-CNN, 7169 parameters, int8 TFLite = 18.6 kB, host int8 latency 0.02 ms/window
+Model: 1D-CNN, 7169 parameters, int8 TFLite = 18.6 kB, host int8 latency 0.03 ms/window
 
 | Level | Model | Accuracy | Sensitivity | Specificity | Precision | F1 |
 |---|---|---|---|---|---|---|
-| Window | float32 | 99.73 | 100.00 | 99.68 | 98.22 | 99.10 |
-| Window | int8 | 99.69 | 100.00 | 99.64 | 98.00 | 98.99 |
-| Trial (deployment) | float32 | 99.48 | 100.00 | 99.03 | 98.88 | 99.44 |
-| Trial (deployment) | int8 | 99.48 | 100.00 | 99.03 | 98.88 | 99.44 |
+| Window | float32 | 99.86 | 100.00 | 99.84 | 99.10 | 99.55 |
+| Window | int8 | 99.86 | 100.00 | 99.84 | 99.10 | 99.55 |
+| Trial (deployment) | float32 | 99.79 | 100.00 | 99.61 | 99.55 | 99.77 |
+| Trial (deployment) | int8 | 99.79 | 100.00 | 99.61 | 99.55 | 99.77 |
 
 ## 5-fold subject-wise CV (float32, mean ± std)
 
-- window_accuracy: 99.22 ± 0.85 %
-- window_sensitivity: 99.88 ± 0.16 %
-- window_specificity: 99.11 ± 1.00 %
-- window_f1: 97.49 ± 2.69 %
-- trial_accuracy: 98.47 ± 1.62 %
-- trial_sensitivity: 99.96 ± 0.09 %
-- trial_specificity: 97.19 ± 3.01 %
-- trial_f1: 98.39 ± 1.69 %
+- window_accuracy: 99.94 ± 0.08 %
+- window_sensitivity: 100.00 ± 0.00 %
+- window_specificity: 99.93 ± 0.10 %
+- window_f1: 99.81 ± 0.27 %
+- trial_accuracy: 99.87 ± 0.18 %
+- trial_sensitivity: 100.00 ± 0.00 %
+- trial_specificity: 99.76 ± 0.34 %
+- trial_f1: 99.86 ± 0.19 %
 
 ## Vitals algorithm self-check (synthetic PPG, NOT clinical validation)
 
