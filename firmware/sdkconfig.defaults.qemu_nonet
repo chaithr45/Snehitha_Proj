@@ -1,0 +1,2 @@
+# QEMU test build for chips without an emulated network (e.g. esp32s3): alerts are only logged
+CONFIG_SAFETY_NET_NONE=y

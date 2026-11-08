@@ -52,9 +52,13 @@ jobs:
             firmware/build/flash_args
 
   qemu:
-    name: End-to-end test in QEMU (replay + supervisor)
+    name: QEMU end-to-end test ${{ matrix.target }}
     runs-on: ubuntu-latest
     container: espressif/idf:v5.5.6
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [esp32, esp32s3]
     steps:
       - uses: actions/checkout@v5
       - name: Install QEMU
@@ -69,12 +73,13 @@ jobs:
         run: |
           git config --global --add safe.directory '*'
           . $IDF_PATH/export.sh
-          tools/run_qemu_replay.sh
+          tools/run_qemu_replay.sh ${{ matrix.target }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: qemu-logs
+          name: qemu-logs-${{ matrix.target }}
           path: |
-            firmware/build_qemu/qemu.log
-            firmware/build_qemu/supervisor.log
-            firmware/build_qemu/supervisor.jsonl
+            firmware/build_qemu_${{ matrix.target }}/qemu.log
+            firmware/build_qemu_${{ matrix.target }}/supervisor.log
+            firmware/build_qemu_${{ matrix.target }}/supervisor.jsonl
+          if-no-files-found: ignore

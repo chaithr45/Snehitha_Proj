@@ -131,23 +131,27 @@ KFall-derived files must not be committed or shared (KFall licence).
 `tools/run_qemu_replay.sh` builds the firmware in **replay mode**: instead of reading the
 sensors it plays 89 s of synthetic sensor data (normal work, a fall where the worker lies
 still, a fall the worker cancels, sustained tachycardia, plus button presses) through the
-real pipeline in the emulated ESP32. The script passes only if:
+real pipeline in the emulated chip. The script passes only if:
 
 - every event (type and time) matches the Python model of the device on the same data;
-- every alert reaches `supervisor.py` over QEMU's emulated Ethernet;
-- TensorFlow Lite Micro on the ESP32 reproduces the TFLite reference outputs for 28 model inputs.
+- TensorFlow Lite Micro on the chip reproduces the TFLite reference outputs for 28 model inputs;
+- on `esp32`: every alert reaches `supervisor.py` over QEMU's emulated Ethernet (QEMU has
+  no network model for the ESP32-S3, so there alerts are only logged).
 
 ```bash
 python $IDF_PATH/tools/idf_tools.py install qemu-xtensa && . $IDF_PATH/export.sh
 ```
 ```bash
-tools/run_qemu_replay.sh
+tools/run_qemu_replay.sh esp32
+```
+```bash
+tools/run_qemu_replay.sh esp32s3
 ```
 
 ### 3. Continuous integration
 
 `.github/workflows/firmware.yml` runs the host tests, builds for ESP32 and ESP32-S3
-with ESP-IDF v5.5.6 and runs the QEMU test on every push.
+with ESP-IDF v5.5.6 and runs the QEMU test for both chips on every push.
 
 ## Not done yet
 

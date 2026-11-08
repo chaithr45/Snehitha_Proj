@@ -1,6 +1,5 @@
-# Test build for QEMU (ESP32 only):
-#   idf.py -B build_qemu -D SDKCONFIG=build_qemu/sdkconfig \
-#          -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.qemu" set-target esp32 build
+# Test build for QEMU, used by tools/run_qemu_replay.sh (which also adds
+# sdkconfig.defaults.qemu_nonet for chips without an emulated network)
 CONFIG_SAFETY_REPLAY=y
 CONFIG_SAFETY_MODEL_SELFTEST=y
 CONFIG_SAFETY_NET_OPENETH=y
