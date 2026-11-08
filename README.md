@@ -1,11 +1,13 @@
-# Edge-AI Worker Safety Monitor — Phase 1
+# Edge-AI Worker Safety Monitor
 
 A waist-worn wearable (ESP32 + MPU6050 IMU + MAX30102 pulse oximeter) that detects
 falls **on the device** with a tiny int8 1D-CNN, watches heart rate and SpO2, and alerts
 a supervisor over LoRa / Wi-Fi.
 
-This repository holds **Phase 1 (software and model)**: the training pipeline and the
-model files the firmware will use. **Phase 2 (ESP32 firmware) has not started yet.**
+- **Phase 1 (model):** the training pipeline and the model files, in this folder.
+- **Phase 2 (firmware):** the ESP32 / ESP32-S3 application in [`firmware/`](firmware/README.md).
+  It is checked against the Python pipeline and in the ESP32 emulator (see the
+  *firmware* workflow under Actions), but **has not yet run on real hardware**.
 
 ## Contents
 
@@ -17,6 +19,7 @@ model files the firmware will use. **Phase 2 (ESP32 firmware) has not started ye
 | `fall_cnn.keras` | float32 Keras model |
 | `results.md`, `results.json` | Metrics on unseen test subjects + 5-fold subject-wise cross-validation |
 | `fig_training_curves.png`, `fig_roc.png`, `fig_confusion_int8.png` | Figures for the paper |
+| `firmware/` | Phase 2: ESP32 firmware, C port of the pipeline, tests, supervisor station ([README](firmware/README.md)) |
 | `Snehitha_project.zip` | Original upload of Phase 1 (an earlier run, kept for reference) |
 
 ## Dataset
@@ -68,15 +71,10 @@ synthetic signals so far — **not clinically validated**.
 
 ## Still to do
 
-**Phase 2 — firmware**
-- MPU6050 at 50 Hz (±16 g, ±2000 °/s), causal low-pass filter from the header,
-  128×6 ring buffer, int8 inference every 0.5 s, alarm on 2 consecutive positives
-- Mount the sensor with the same axis orientation as KFall (gravity mainly on −Y),
-  or remap axes in firmware — training only covers ±10° of tilt
-- MAX30102 driver and C port of `estimate_hr` / `estimate_spo2`
-- C port of `SafetyFSM` with cancel button, buzzer and vibration motor
-- LoRa / Wi-Fi alert link and a supervisor-side receiver
-- Python-vs-ESP32 parity test; on-device latency, RAM and battery life
+**Phase 2 — on real hardware** (the software is written and tested, see [`firmware/`](firmware/README.md))
+- Wire the board, flash it, and check sensor orientation (gravity mainly on −Y, as in KFall)
+- Measure on the device: inference time, RAM, battery life
+- LoRa alert link (Wi-Fi works now)
 
 **Validation**
 - Calibrate SpO2 against a reference oximeter
