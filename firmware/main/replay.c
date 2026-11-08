@@ -36,6 +36,27 @@ static void hook(double t, sc_event_t ev)
     s_n_seen++;
 }
 
+#if CONFIG_SAFETY_REPLAY_REALTIME
+// Live demo: an alert stays up until someone acknowledges it on the supervisor page,
+// then the "worker" clears it with a long press, as in real life.
+static void wait_for_ack(void)
+{
+    pipeline_status_t st;
+    pipeline_get_status(&st);
+    if (st.state != SC_STATE_ALERT || st.acked) {
+        return;
+    }
+    ESP_LOGW(TAG, "DEMO: alert is waiting -> click Acknowledge on the supervisor page");
+    for (int ms = 0; ms < 180000 && !st.acked; ms += 200) {
+        vTaskDelay(pdMS_TO_TICKS(200));
+        pipeline_get_status(&st);
+    }
+    vTaskDelay(pdMS_TO_TICKS(3000));   // let the "help is on the way" beeps be heard
+    ESP_LOGW(TAG, "DEMO: %s", st.acked ? "help has arrived, the worker clears the alert"
+                                       : "no acknowledgment after 3 min, clearing the alert anyway");
+}
+#endif
+
 static void task(void *arg)
 {
     (void)arg;
@@ -44,6 +65,10 @@ static void task(void *arg)
     ESP_LOGI(TAG, "replaying %d s of sensor data (%d IMU + %d PPG samples)", REPLAY_IMU_N / 50, REPLAY_IMU_N,
              REPLAY_PPG_N);
     const int64_t t0 = esp_timer_get_time();
+#if CONFIG_SAFETY_REPLAY_REALTIME
+    ESP_LOGW(TAG, "DEMO: real-time replay, about %d minutes", REPLAY_IMU_N / 50 / 60 + 1);
+    TickType_t last = xTaskGetTickCount();
+#endif
     for (uint32_t k = 0; k < REPLAY_IMU_N; k++) {
         if (seg < N_OF(REPLAY_SEGMENTS) && REPLAY_SEGMENTS[seg].imu_index == k) {
             ESP_LOGI(TAG, "SEGMENT t=%.2f %s", k / 50.0, REPLAY_SEGMENTS[seg].name);
@@ -54,6 +79,10 @@ static void task(void *arg)
                 ESP_LOGI(TAG, "BUTTON t=%.2f short press (I'm OK)", k / 50.0);
                 pipeline_button_press();
             } else {
+#if CONFIG_SAFETY_REPLAY_REALTIME
+                wait_for_ack();
+                last = xTaskGetTickCount();
+#endif
                 ESP_LOGI(TAG, "BUTTON t=%.2f long press (clear alert)", k / 50.0);
                 pipeline_request_reset();
             }
@@ -66,9 +95,13 @@ static void task(void *arg)
         float s[6];
         mpu6050_convert(&REPLAY_IMU[k * 6], s);   // same conversion as live MPU6050 data
         pipeline_push_imu(s);
+#if CONFIG_SAFETY_REPLAY_REALTIME
+        vTaskDelayUntil(&last, pdMS_TO_TICKS(20));   // 50 Hz, like the real sensor
+#else
         if (k % 25 == 0) {
             vTaskDelay(1);   // let the network / annunciator tasks run
         }
+#endif
     }
     const double wall_s = (double)(esp_timer_get_time() - t0) / 1e6;
 
@@ -106,6 +139,9 @@ static void task(void *arg)
              (unsigned)fall_model_arena_used(), wall_s);
     const bool pass = events_ok && net_ok && model_ok;
     ESP_LOGI(TAG, "REPLAY RESULT: %s", pass ? "PASS" : "FAIL");
+#if CONFIG_SAFETY_REPLAY_REALTIME
+    ESP_LOGW(TAG, "DEMO FINISHED");
+#endif
     vTaskDelete(NULL);
 }
 

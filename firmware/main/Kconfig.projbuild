@@ -131,4 +131,13 @@ menu "Worker safety monitor"
             pipeline at simulated time and checks the resulting events against
             the Python model of the device. Used to test the firmware in QEMU.
 
+    config SAFETY_REPLAY_REALTIME
+        bool "Replay at real speed and wait for acknowledgments (live demo)"
+        depends on SAFETY_REPLAY
+        default n
+        help
+            For demonstrations (tools/demo.sh): the scenario plays in real time (~4 min)
+            and, before the simulated worker clears an alert, waits until someone clicks
+            Acknowledge on the supervisor page.
+
 endmenu

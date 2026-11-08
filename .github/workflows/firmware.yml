@@ -85,3 +85,24 @@ jobs:
             firmware/build_qemu_${{ matrix.target }}/supervisor.log
             firmware/build_qemu_${{ matrix.target }}/supervisor.jsonl
           if-no-files-found: ignore
+
+  demo:
+    name: Live demo script (real-time, unattended)
+    runs-on: ubuntu-latest
+    container: espressif/idf:v5.5.6
+    steps:
+      - uses: actions/checkout@v5
+      - name: Run tools/demo.sh --ci (alerts acknowledged automatically)
+        shell: bash
+        working-directory: firmware
+        run: |
+          . $IDF_PATH/export.sh
+          tools/demo.sh --ci
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: demo-logs
+          path: |
+            firmware/build_demo/demo.log
+            firmware/build_demo/supervisor.log
+          if-no-files-found: ignore

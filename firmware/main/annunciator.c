@@ -2,6 +2,7 @@
 #include "annunciator.h"
 
 #include "driver/gpio.h"
+#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -66,4 +67,16 @@ void annunciator_init(void)
     xTaskCreate(task, "annunciator", 2048, NULL, 3, NULL);
 }
 
-void annunciator_set(ann_mode_t mode) { s_mode = mode; }
+void annunciator_set(ann_mode_t mode)
+{
+    static const char *const what[] = {
+        "off",
+        "beeping + vibrating: worker can press \"I'm OK\"",
+        "ALARM: fast beeping, alert sent to the supervisor",
+        "two short beeps every 3 s: help is on the way",
+    };
+    if (mode != s_mode && (unsigned)mode < sizeof(what) / sizeof(what[0])) {
+        ESP_LOGW("BUZZER", "%s", what[mode]);   // visible stand-in for the buzzer in QEMU demos
+    }
+    s_mode = mode;
+}

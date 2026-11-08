@@ -100,6 +100,10 @@ See [`firmware/README.md`](firmware/README.md). Beyond running the model, the de
 - shows the supervisor's **acknowledgment** to the worker ("help is on the way");
 - sends posture, impact force, heart rate and SpO2 with every alert.
 
+**Live demo without a board:** see [`DEMO.md`](DEMO.md). One Docker command runs the
+firmware in the ESP32 emulator in real time while the supervisor page shows the
+alerts, which you acknowledge by clicking.
+
 Without a board, everything is checked automatically on every push: the C code against
 the Python pipeline (identical decisions on all 957 KFall test recordings), real
 ESP-IDF builds for ESP32 and ESP32-S3, and a 250 s scenario run in the ESP32 emulator.

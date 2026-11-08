@@ -1,0 +1,4 @@
+# Live demo in QEMU (tools/demo.sh): real-time replay, status to the supervisor every 5 s
+CONFIG_SAFETY_REPLAY_REALTIME=y
+CONFIG_SAFETY_TELEMETRY_PERIOD_S=5
+CONFIG_SAFETY_WORKER_ID="demo-worker"
