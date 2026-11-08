@@ -1,0 +1,190 @@
+{
+  "dataset": "kfall",
+  "n_trials": 5057,
+  "test_subjects": [
+    "SA13",
+    "SA24",
+    "SA25",
+    "SA32",
+    "SA33",
+    "SA38"
+  ],
+  "val_subjects": [
+    "SA11",
+    "SA16",
+    "SA28",
+    "SA35"
+  ],
+  "window_samples": 128,
+  "fs_hz": 50,
+  "threshold": 0.20999999999999996,
+  "consec": 2,
+  "params": 7169,
+  "tflite_int8_bytes": 19088,
+  "tflm_ops": [
+    "CONV_2D",
+    "EXPAND_DIMS",
+    "FULLY_CONNECTED",
+    "LOGISTIC",
+    "MAX_POOL_2D",
+    "MEAN",
+    "RESHAPE"
+  ],
+  "host_int8_latency_ms": 0.02463816500039684,
+  "window_float": {
+    "accuracy": 0.99727241732015,
+    "sensitivity": 1.0,
+    "specificity": 0.9967897271268058,
+    "precision": 0.9821826280623608,
+    "f1": 0.9910112359550562,
+    "balanced_acc": 0.9983948635634029,
+    "auc": 0.9999954502935471,
+    "tp": 441,
+    "fn": 0,
+    "tn": 2484,
+    "fp": 8
+  },
+  "window_int8": {
+    "accuracy": 0.9969314694851688,
+    "sensitivity": 1.0,
+    "specificity": 0.9963884430176565,
+    "precision": 0.98,
+    "f1": 0.98989898989899,
+    "balanced_acc": 0.9981942215088282,
+    "auc": 0.9999940853816112,
+    "tp": 441,
+    "fn": 0,
+    "tn": 2483,
+    "fp": 9
+  },
+  "trial_float": {
+    "accuracy": 0.9947753396029259,
+    "sensitivity": 1.0,
+    "specificity": 0.9903100775193798,
+    "precision": 0.9887892376681614,
+    "f1": 0.9943630214205187,
+    "balanced_acc": 0.9951550387596899,
+    "tp": 441,
+    "fn": 0,
+    "tn": 511,
+    "fp": 5
+  },
+  "trial_int8": {
+    "accuracy": 0.9947753396029259,
+    "sensitivity": 1.0,
+    "specificity": 0.9903100775193798,
+    "precision": 0.9887892376681614,
+    "f1": 0.9943630214205187,
+    "balanced_acc": 0.9951550387596899,
+    "tp": 441,
+    "fn": 0,
+    "tn": 511,
+    "fp": 5
+  },
+  "vitals_selfcheck": [
+    {
+      "true_hr": 55,
+      "est_hr": 55.0,
+      "true_spo2": 98,
+      "est_spo2": 98.0
+    },
+    {
+      "true_hr": 72,
+      "est_hr": 72.3,
+      "true_spo2": 97,
+      "est_spo2": 97.0
+    },
+    {
+      "true_hr": 95,
+      "est_hr": 95.2,
+      "true_spo2": 95,
+      "est_spo2": 95.0
+    },
+    {
+      "true_hr": 120,
+      "est_hr": 120.0,
+      "true_spo2": 93,
+      "est_spo2": 93.0
+    },
+    {
+      "true_hr": 150,
+      "est_hr": 150.0,
+      "true_spo2": 90,
+      "est_spo2": 90.0
+    },
+    {
+      "true_hr": 170,
+      "est_hr": 171.4,
+      "true_spo2": 88,
+      "est_spo2": 88.0
+    }
+  ],
+  "fsm_demo": {
+    "Real fall, worker motionless": [
+      [
+        5.0,
+        "FALL_SUSPECTED -> buzzer + vibration, cancel window open"
+      ],
+      [
+        10.5,
+        "ALERT_FALL (post-fall inactivity) -> LoRa/Wi-Fi to supervisor"
+      ]
+    ],
+    "False alarm, worker presses cancel": [
+      [
+        5.0,
+        "FALL_SUSPECTED -> buzzer + vibration, cancel window open"
+      ],
+      [
+        8.0,
+        "CANCELLED by worker (false alarm suppressed)"
+      ]
+    ],
+    "No fall, sustained tachycardia": [
+      [
+        10.0,
+        "ALERT_VITALS hr=150 spo2=96 -> LoRa/Wi-Fi to supervisor"
+      ]
+    ],
+    "Normal work": [
+      [
+        "-",
+        "no events (correct)"
+      ]
+    ]
+  },
+  "cv": {
+    "window_accuracy": [
+      0.9921877130365748,
+      0.008451156962845917
+    ],
+    "window_sensitivity": [
+      0.9987783776301218,
+      0.0015839060130341392
+    ],
+    "window_specificity": [
+      0.9910536614558254,
+      0.010000619320460558
+    ],
+    "window_f1": [
+      0.9749286045266997,
+      0.026922965959600382
+    ],
+    "trial_accuracy": [
+      0.9846511437553002,
+      0.016160272588991116
+    ],
+    "trial_sensitivity": [
+      0.9995535714285715,
+      0.0008928571428571618
+    ],
+    "trial_specificity": [
+      0.971944605192383,
+      0.030051718565786374
+    ],
+    "trial_f1": [
+      0.9838972048652564,
+      0.016870894132583948
+    ]
+  }
+}
