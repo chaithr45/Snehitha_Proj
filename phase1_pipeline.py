@@ -326,7 +326,10 @@ def train_model(Xtr, ytr, Xva, yva, mean, std, epochs, batch, seed, verbose=1):
     val = ((Xva - mean) / std, yva[:, None])
 
     model = build_model()
-    cbs = [tf.keras.callbacks.EarlyStopping(monitor="val_auc", mode="max", patience=8,
+    # Monitor val_loss, not val_auc: on KFall the validation AUC is already 1.000
+    # after the first epoch, so AUC-based early stopping never sees an improvement
+    # and restore_best_weights would roll the model back to epoch 1.
+    cbs = [tf.keras.callbacks.EarlyStopping(monitor="val_loss", mode="min", patience=8,
                                             restore_best_weights=True),
            tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.5,
                                                 patience=3, min_lr=1e-5)]

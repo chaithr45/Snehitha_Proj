@@ -1,0 +1,13 @@
+# Pipeline outputs and the parsed-data cache (large, regenerated on each run)
+phase1_outputs/
+*_cache.npz
+
+# Dataset folders -- download from the dataset-v1 release instead
+sensor_data_new/
+label_data_new/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
