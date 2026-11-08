@@ -10,9 +10,10 @@
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "fall_model_data.h"
+// micro_interpreter.h also provides the model schema (tflite::GetModel,
+// TFLITE_SCHEMA_VERSION); its own path moved between esp-tflite-micro 1.4.1 and 1.4.2.
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
-#include "tensorflow/lite/schema/schema_generated.h"
 
 #if CONFIG_SAFETY_MODEL_SELFTEST
 #include "selftest_data.h"
