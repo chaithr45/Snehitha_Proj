@@ -1,0 +1,11 @@
+set(SC_SRCS src/sc_imu.c src/sc_vitals.c src/sc_fsm.c)
+
+if(ESP_PLATFORM)
+    idf_component_register(SRCS ${SC_SRCS} INCLUDE_DIRS include)
+else()
+    # Host build (firmware/test/host)
+    add_library(safety_core STATIC ${SC_SRCS})
+    target_include_directories(safety_core PUBLIC include)
+    target_link_libraries(safety_core PUBLIC m)
+    target_compile_options(safety_core PRIVATE -Wall -Wextra -Werror)
+endif()

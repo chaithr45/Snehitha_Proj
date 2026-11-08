@@ -1,0 +1,111 @@
+menu "Worker safety monitor"
+
+    menu "Pins"
+        config SAFETY_I2C_SDA
+            int "I2C SDA GPIO (MPU6050 + MAX30102)"
+            default 8 if IDF_TARGET_ESP32S3
+            default 21
+
+        config SAFETY_I2C_SCL
+            int "I2C SCL GPIO (MPU6050 + MAX30102)"
+            default 9 if IDF_TARGET_ESP32S3
+            default 22
+
+        config SAFETY_BUTTON_GPIO
+            int "Cancel / reset button GPIO (active low, internal pull-up; -1 = none)"
+            default 0
+
+        config SAFETY_BUZZER_GPIO
+            int "Buzzer GPIO (active buzzer, high = on; -1 = none)"
+            default 4 if IDF_TARGET_ESP32S3
+            default 25
+
+        config SAFETY_VIBRATION_GPIO
+            int "Vibration motor GPIO (via transistor, high = on; -1 = none)"
+            default 5 if IDF_TARGET_ESP32S3
+            default 26
+    endmenu
+
+    config SAFETY_IMU_AXES
+        string "MPU6050 axis mapping to the KFall frame"
+        default "+X+Y+Z"
+        help
+            Which MPU6050 axis (with sign) feeds the model's x, y and z channels.
+            The model was trained on KFall, where the sensor sits on the lower back
+            with its Y axis pointing DOWN (standing still reads ay = -1 g).
+            Example: a board mounted with Y pointing up -> "+X-Y-Z".
+            The same mapping is applied to the gyroscope.
+
+    config SAFETY_BUTTON_LONG_PRESS_MS
+        int "Long press (clear an alert) duration [ms]"
+        default 3000
+
+    config SAFETY_PPG_WINDOW_S
+        int "Heart-rate / SpO2 analysis window [s]"
+        range 4 20
+        default 10
+
+    config SAFETY_FINGER_IR_MIN
+        int "Minimum IR level for valid vitals (skin contact)"
+        default 30000
+        help
+            If the mean IR signal is below this level the sensor is not touching skin:
+            HR and SpO2 are reported as unavailable and never raise a vitals alert.
+
+    choice SAFETY_NET
+        prompt "Alert link to the supervisor"
+        default SAFETY_NET_WIFI
+
+        config SAFETY_NET_WIFI
+            bool "Wi-Fi (station)"
+        config SAFETY_NET_OPENETH
+            bool "Emulated Ethernet (QEMU tests only)"
+            depends on IDF_TARGET_ESP32
+            select ETH_USE_OPENETH
+        config SAFETY_NET_NONE
+            bool "None (alerts only logged)"
+    endchoice
+
+    config SAFETY_WIFI_SSID
+        string "Wi-Fi SSID"
+        depends on SAFETY_NET_WIFI
+        default "worksite"
+
+    config SAFETY_WIFI_PASSWORD
+        string "Wi-Fi password"
+        depends on SAFETY_NET_WIFI
+        default ""
+
+    config SAFETY_SUPERVISOR_URL
+        string "Supervisor server base URL"
+        depends on !SAFETY_NET_NONE
+        default "http://192.168.1.100:8080"
+        help
+            Alerts are POSTed as JSON to <url>/alert, status to <url>/telemetry.
+            Run firmware/tools/supervisor.py on that machine.
+
+    config SAFETY_WORKER_ID
+        string "Worker / device ID"
+        default "worker-01"
+
+    config SAFETY_TELEMETRY_PERIOD_S
+        int "Telemetry period [s] (0 = off)"
+        default 30
+
+    config SAFETY_TENSOR_ARENA_KB
+        int "TFLite Micro tensor arena [KB]"
+        default 32
+
+    config SAFETY_MODEL_SELFTEST
+        bool "Check the model against reference outputs at boot"
+        default n
+
+    config SAFETY_REPLAY
+        bool "Replay recorded sensor data instead of reading the sensors (testing)"
+        default n
+        help
+            Feeds the synthetic stream in main/replay_data.h through the full
+            pipeline at simulated time and checks the resulting events against
+            the Python model of the device. Used to test the firmware in QEMU.
+
+endmenu
