@@ -359,13 +359,17 @@ def metrics(y, p, thr):
 
 
 def pick_threshold(y, p):
-    """Max F1 on validation; ties broken toward lower threshold (safety-first)."""
-    best_t, best_f = 0.5, -1
-    for t in np.linspace(0.05, 0.95, 91):
-        f = metrics(y, p, t)["f1"]
-        if f > best_f + 1e-9:
-            best_t, best_f = float(t), f
-    return best_t
+    """Max F1 on validation. When several thresholds tie for the maximum (a validation set
+    the model separates perfectly ties at every threshold), take the middle of the longest
+    run of tied thresholds: the choice furthest from both failure modes. Taking the lowest
+    tied value instead let the threshold drift to 0.05 and doubled the false alarms on the
+    test subjects without detecting any extra fall (see evaluate_deployment.py)."""
+    ts = np.linspace(0.05, 0.95, 91)
+    f1 = np.array([metrics(y, p, t)["f1"] for t in ts])
+    tied = np.flatnonzero(f1 >= f1.max() - 1e-9)
+    runs = np.split(tied, np.flatnonzero(np.diff(tied) > 1) + 1)
+    run = max(runs, key=len)
+    return float(np.round(ts[run[len(run) // 2]], 4))
 
 
 def trial_level(predict, trials, data, mean, std, thr, consec=2):
