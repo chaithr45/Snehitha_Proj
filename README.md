@@ -18,6 +18,7 @@ a supervisor over LoRa / Wi-Fi.
 | `fall_model_int8.tflite` | int8 model for TensorFlow Lite Micro (18.6 kB) |
 | `fall_cnn.keras` | float32 Keras model |
 | `results.md`, `results.json` | Metrics on unseen test subjects + 5-fold subject-wise cross-validation |
+| `evaluate_deployment.py`, `deployment_eval.*` | Device-level evaluation: false alarms per hour, time to alarm, threshold sweep |
 | `fig_training_curves.png`, `fig_roc.png`, `fig_confusion_int8.png` | Figures for the paper |
 | `firmware/` | Phase 2: ESP32 firmware, C port of the pipeline, tests, supervisor station ([README](firmware/README.md)) |
 | `Snehitha_project.zip` | Original upload of Phase 1 (an earlier run, kept for reference) |
@@ -54,31 +55,65 @@ python phase1_pipeline.py --data kfall --cv 5
 
 ## Results (KFall, 6 test subjects never seen in training)
 
-int8 model (the one that runs on the ESP32), threshold 0.05, alarm after 2 consecutive
+int8 model (the one that runs on the ESP32), threshold 0.50, alarm after 2 consecutive
 positive windows:
 
 | Level | Accuracy | Sensitivity | Specificity | F1 |
 |---|---|---|---|---|
-| Per window | 99.86 % | 100.00 % | 99.84 % | 99.55 % |
-| Per recording (deployment) | 99.79 % | 100.00 % | 99.61 % | 99.77 % |
+| Per window | 99.93 % | 100.00 % | 99.92 % | 99.77 % |
+| Per recording (deployment) | 99.90 % | 100.00 % | 99.81 % | 99.89 % |
 
-All 441 test falls detected; 2 false alarms out of 516 normal-activity recordings.
+All 441 test falls detected; 1 false alarm out of 516 normal-activity recordings.
 5-fold subject-wise CV: per-recording sensitivity 100.00 ± 0.00 %, specificity
-99.76 ± 0.34 %. Full tables in [`results.md`](results.md).
+99.86 ± 0.28 %. Full tables in [`results.md`](results.md).
 
-The heart-rate / SpO2 algorithms and the alert state machine are checked only on
-synthetic signals so far — **not clinically validated**.
+### As the device runs it ([`deployment_eval.md`](deployment_eval.md))
+
+`evaluate_deployment.py` replays every validation and test recording through the
+firmware's exact decision rule:
+
+| | Test subjects | Validation subjects |
+|---|---|---|
+| Falls detected | 441 / 441 | 297 / 297 |
+| Time from impact to alarm (median / 95th percentile) | 0.81 s / 1.08 s | 0.83 s / 1.08 s |
+| False alarms during normal activity | 1 in 1.16 h (0.9 / h, 95 % CI 0.0–4.8) | 0 in 0.82 h |
+
+KFall's activity clips are dense with hard movements, so the false-alarm rate is a
+pessimistic bound for a normal shift. Every threshold from 0.05 to 0.95 detects all
+falls; the threshold now sits in the middle of the range the validation subjects
+support (it used to take the lowest, 0.05, which doubled the false alarms).
+
+![threshold sweep](deployment_eval.png)
+
+The heart-rate / SpO2 algorithms and the alert rules are checked only on synthetic
+signals so far: **not clinically validated**.
+
+## Phase 2 firmware in short
+
+See [`firmware/README.md`](firmware/README.md). Beyond running the model, the device:
+
+- raises a **man-down** alarm when the worker lies motionless for 30 s (or stands
+  motionless for 3 min), which catches a collapse with no impact;
+- pauses **vitals alerts while the worker moves vigorously**, when the PPG is unreliable;
+- reports a **frozen or missing motion sensor** to the supervisor;
+- keeps alerts in a **store-and-forward** queue until the supervisor confirms them;
+- shows the supervisor's **acknowledgment** to the worker ("help is on the way");
+- sends posture, impact force, heart rate and SpO2 with every alert.
+
+Without a board, everything is checked automatically on every push: the C code against
+the Python pipeline (identical decisions on all 957 KFall test recordings), real
+ESP-IDF builds for ESP32 and ESP32-S3, and a 250 s scenario run in the ESP32 emulator.
 
 ## Still to do
 
-**Phase 2 — on real hardware** (the software is written and tested, see [`firmware/`](firmware/README.md))
-- Wire the board, flash it, and check sensor orientation (gravity mainly on −Y, as in KFall)
-- Measure on the device: inference time, RAM, battery life
+**On real hardware** (the software is written and tested without a board)
+- Wire the board, flash it, check sensor orientation (gravity mainly on −Y, as in KFall)
+- Measure on the device: inference time, battery life
+- Tune the man-down and vitals-motion settings on real workers
 - LoRa alert link (Wi-Fi works now)
 
 **Validation**
 - Calibrate SpO2 against a reference oximeter
 - Real-world tests with the device; report false alarms per hour of wear
-- Make threshold selection more robust: the validation subjects are too easy (every
-  threshold from 0.05 to 0.95 scores perfectly), so the pipeline falls back to the
-  lowest one
+- Validation subjects that are harder for the model, so the threshold choice is data-driven
+  rather than "middle of a perfect plateau"

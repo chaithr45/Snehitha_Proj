@@ -196,10 +196,10 @@ def main():
     plat = plateau(recs["val"], val_signals, hp, q8)
     sweep = {n: [evaluate(recs[n], t, hp["consec"]) for t in THRESHOLDS] for n in recs}
     dep = {n: evaluate(recs[n], hp["thr"], hp["consec"]) for n in recs}
-    mid = {n: evaluate(recs[n], plat["midpoint"], hp["consec"]) for n in recs}
+    low = {n: evaluate(recs[n], plat["tied_from"], hp["consec"]) for n in recs}   # previous rule
 
     out = dict(deployed_threshold=hp["thr"], consec=hp["consec"], validation_plateau=plat,
-               deployed=dep, at_plateau_midpoint=mid,
+               deployed=dep, at_lowest_tied_threshold=low,
                sweep={n: [dict({k: s[k] for k in ("threshold", "sensitivity", "false_alarms_per_hour",
                                                    "adl_recordings_with_alarm")},
                                 latency_median_s=s["latency_s"]["median"]) for s in sweep[n]] for n in sweep})
@@ -222,16 +222,20 @@ def main():
           "Median latency | 95th pct latency | Alarm within 1 s |", "|---|---|---|---|---|---|---|"]
     for n, lab in (("test", "Test"), ("val", "Validation")):
         md.append(row(f"{lab}, {hp['thr']:.2f} (deployed)", dep[n]))
-        md.append(row(f"{lab}, {plat['midpoint']:.2f} (plateau middle)", mid[n]))
+        if abs(plat["tied_from"] - hp["thr"]) > 1e-6:
+            md.append(row(f"{lab}, {plat['tied_from']:.2f} (lowest tied: previous rule)", low[n]))
     md += ["", "KFall activity clips are short and dense with difficult movements (jumps, stumbles, "
            "sitting down hard), so false alarms per hour here are a pessimistic upper bound for a "
            "normal shift, and with so few events the interval is wide. On the device each false alarm first opens the 10 s cancel window; it "
            "only reaches the supervisor if the worker neither presses \"I'm OK\" nor moves.", "",
            "## Threshold choice", "",
-           f"With the pipeline's rule (maximum window-level F1 on the validation subjects), every "
-           f"threshold from {plat['tied_from']:.2f} to {plat['tied_to']:.2f} ties at F1 = "
-           f"{plat['max_f1']:.4f}. The pipeline takes the lowest ({hp['thr']:.2f}); the middle of the "
-           f"tied range is {plat['midpoint']:.2f}, the choice furthest from both ends.", "",
+           f"The pipeline picks the threshold with the best window-level F1 on the validation "
+           f"subjects. Every threshold from {plat['tied_from']:.2f} to {plat['tied_to']:.2f} ties at "
+           f"F1 = {plat['max_f1']:.4f}, so the pipeline takes the middle of the tied range "
+           f"({plat['midpoint']:.2f}), the choice furthest from both failure modes. Its previous rule "
+           f"took the lowest tied value ({plat['tied_from']:.2f}): on the test subjects that gives "
+           f"{low['test']['false_alarms']} false alarms instead of {dep['test']['false_alarms']} and "
+           f"detects {low['test']['detected'] - dep['test']['detected']} more falls.", "",
            f"Falls detected at every threshold from {THRESHOLDS[0]:.2f} to {THRESHOLDS[-1]:.2f}: "
            f"validation {min(s['sensitivity'] for s in sweep['val']) * 100:.0f} %, "
            f"test {min(s['sensitivity'] for s in sweep['test']) * 100:.0f} % (worst case over the sweep). "

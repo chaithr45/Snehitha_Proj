@@ -25,7 +25,7 @@ static const replay_segment_t REPLAY_SEGMENTS[] = {
 };
 static const replay_action_t REPLAY_ACTIONS[] = {
   {2550, 2},
-  {3253, 1},
+  {3278, 1},
   {5100, 2},
   {8150, 2},
 };
@@ -33,8 +33,8 @@ static const replay_action_t REPLAY_ACTIONS[] = {
 static const replay_expected_t REPLAY_EXPECTED[] = {
   {39.56f, 1},  // FALL_SUSPECTED
   {45.56f, 3},  // ALERT_FALL (post-fall inactivity)
-  {63.06f, 1},  // FALL_SUSPECTED
-  {65.56f, 2},  // CANCELLED
+  {63.56f, 1},  // FALL_SUSPECTED
+  {66.06f, 2},  // CANCELLED
   {91.06f, 5},  // ALERT_VITALS
   {138.06f, 6},  // MAN_DOWN_SUSPECTED
   {153.06f, 8},  // ALERT_MAN_DOWN

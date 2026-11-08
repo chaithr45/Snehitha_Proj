@@ -1,0 +1,386 @@
+{
+  "deployed_threshold": 0.5,
+  "consec": 2,
+  "validation_plateau": {
+    "max_f1": 1.0,
+    "tied_from": 0.05,
+    "tied_to": 0.95,
+    "midpoint": 0.5
+  },
+  "deployed": {
+    "val": {
+      "threshold": 0.5,
+      "falls": 297,
+      "detected": 297,
+      "sensitivity": 1.0,
+      "adl_recordings": 344,
+      "adl_recordings_with_alarm": 0,
+      "adl_hours": 0.8197277777777777,
+      "false_alarms": 0,
+      "false_alarms_per_hour": 0.0,
+      "false_alarms_per_hour_ci95": [
+        0.0,
+        4.500127425368235
+      ],
+      "alarms_before_fall": 0,
+      "latency_s": {
+        "median": 0.8299999999999996,
+        "p5": 0.54,
+        "p95": 1.0819999999999996,
+        "max": 1.1499999999999995,
+        "within_1s": 0.8383838383838383
+      },
+      "false_alarms_by_task": {}
+    },
+    "test": {
+      "threshold": 0.5,
+      "falls": 441,
+      "detected": 441,
+      "sensitivity": 1.0,
+      "adl_recordings": 516,
+      "adl_recordings_with_alarm": 1,
+      "adl_hours": 1.1619166666666665,
+      "false_alarms": 1,
+      "false_alarms_per_hour": 0.8606469196012337,
+      "false_alarms_per_hour_ci95": [
+        0.021789693452734602,
+        4.795217721528135
+      ],
+      "alarms_before_fall": 0,
+      "latency_s": {
+        "median": 0.81,
+        "p5": 0.5599999999999996,
+        "p95": 1.0799999999999992,
+        "max": 1.21,
+        "within_1s": 0.8458049886621315
+      },
+      "false_alarms_by_task": {
+        "T05": 1
+      }
+    }
+  },
+  "at_lowest_tied_threshold": {
+    "val": {
+      "threshold": 0.05,
+      "falls": 297,
+      "detected": 297,
+      "sensitivity": 1.0,
+      "adl_recordings": 344,
+      "adl_recordings_with_alarm": 0,
+      "adl_hours": 0.8197277777777777,
+      "false_alarms": 0,
+      "false_alarms_per_hour": 0.0,
+      "false_alarms_per_hour_ci95": [
+        0.0,
+        4.500127425368235
+      ],
+      "alarms_before_fall": 0,
+      "latency_s": {
+        "median": 0.79,
+        "p5": 0.5099999999999998,
+        "p95": 1.0419999999999998,
+        "max": 1.1199999999999997,
+        "within_1s": 0.8855218855218855
+      },
+      "false_alarms_by_task": {}
+    },
+    "test": {
+      "threshold": 0.05,
+      "falls": 441,
+      "detected": 441,
+      "sensitivity": 1.0,
+      "adl_recordings": 516,
+      "adl_recordings_with_alarm": 2,
+      "adl_hours": 1.1619166666666665,
+      "false_alarms": 2,
+      "false_alarms_per_hour": 1.7212938392024675,
+      "false_alarms_per_hour_ci95": [
+        0.20845666947770064,
+        6.2179051863076475
+      ],
+      "alarms_before_fall": 0,
+      "latency_s": {
+        "median": 0.7999999999999998,
+        "p5": 0.5299999999999994,
+        "p95": 1.0499999999999998,
+        "max": 1.1399999999999997,
+        "within_1s": 0.8775510204081632
+      },
+      "false_alarms_by_task": {
+        "T05": 2
+      }
+    }
+  },
+  "sweep": {
+    "val": [
+      {
+        "threshold": 0.05,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.79
+      },
+      {
+        "threshold": 0.1,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8099999999999996
+      },
+      {
+        "threshold": 0.15,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8099999999999996
+      },
+      {
+        "threshold": 0.2,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.81
+      },
+      {
+        "threshold": 0.25,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8199999999999994
+      },
+      {
+        "threshold": 0.3,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8199999999999994
+      },
+      {
+        "threshold": 0.35,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8199999999999994
+      },
+      {
+        "threshold": 0.4,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8299999999999992
+      },
+      {
+        "threshold": 0.45,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8299999999999992
+      },
+      {
+        "threshold": 0.5,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8299999999999996
+      },
+      {
+        "threshold": 0.55,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8399999999999999
+      },
+      {
+        "threshold": 0.6,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8499999999999996
+      },
+      {
+        "threshold": 0.65,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8499999999999996
+      },
+      {
+        "threshold": 0.7,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8499999999999996
+      },
+      {
+        "threshold": 0.75,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8499999999999996
+      },
+      {
+        "threshold": 0.8,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8599999999999994
+      },
+      {
+        "threshold": 0.85,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8599999999999994
+      },
+      {
+        "threshold": 0.9,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8599999999999994
+      },
+      {
+        "threshold": 0.95,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8599999999999994
+      }
+    ],
+    "test": [
+      {
+        "threshold": 0.05,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 1.7212938392024675,
+        "adl_recordings_with_alarm": 2,
+        "latency_median_s": 0.7999999999999998
+      },
+      {
+        "threshold": 0.1,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 1.7212938392024675,
+        "adl_recordings_with_alarm": 2,
+        "latency_median_s": 0.8099999999999996
+      },
+      {
+        "threshold": 0.15,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.8606469196012337,
+        "adl_recordings_with_alarm": 1,
+        "latency_median_s": 0.8099999999999996
+      },
+      {
+        "threshold": 0.2,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.8606469196012337,
+        "adl_recordings_with_alarm": 1,
+        "latency_median_s": 0.8099999999999996
+      },
+      {
+        "threshold": 0.25,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.8606469196012337,
+        "adl_recordings_with_alarm": 1,
+        "latency_median_s": 0.8099999999999996
+      },
+      {
+        "threshold": 0.3,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.8606469196012337,
+        "adl_recordings_with_alarm": 1,
+        "latency_median_s": 0.8099999999999996
+      },
+      {
+        "threshold": 0.35,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.8606469196012337,
+        "adl_recordings_with_alarm": 1,
+        "latency_median_s": 0.8099999999999996
+      },
+      {
+        "threshold": 0.4,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.8606469196012337,
+        "adl_recordings_with_alarm": 1,
+        "latency_median_s": 0.81
+      },
+      {
+        "threshold": 0.45,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.8606469196012337,
+        "adl_recordings_with_alarm": 1,
+        "latency_median_s": 0.81
+      },
+      {
+        "threshold": 0.5,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.8606469196012337,
+        "adl_recordings_with_alarm": 1,
+        "latency_median_s": 0.81
+      },
+      {
+        "threshold": 0.55,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.8606469196012337,
+        "adl_recordings_with_alarm": 1,
+        "latency_median_s": 0.8199999999999994
+      },
+      {
+        "threshold": 0.6,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.8606469196012337,
+        "adl_recordings_with_alarm": 1,
+        "latency_median_s": 0.8199999999999994
+      },
+      {
+        "threshold": 0.65,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.8606469196012337,
+        "adl_recordings_with_alarm": 1,
+        "latency_median_s": 0.8199999999999994
+      },
+      {
+        "threshold": 0.7,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.8606469196012337,
+        "adl_recordings_with_alarm": 1,
+        "latency_median_s": 0.8199999999999994
+      },
+      {
+        "threshold": 0.75,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.8606469196012337,
+        "adl_recordings_with_alarm": 1,
+        "latency_median_s": 0.8299999999999992
+      },
+      {
+        "threshold": 0.8,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.8606469196012337,
+        "adl_recordings_with_alarm": 1,
+        "latency_median_s": 0.8299999999999992
+      },
+      {
+        "threshold": 0.85,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.8606469196012337,
+        "adl_recordings_with_alarm": 1,
+        "latency_median_s": 0.8299999999999996
+      },
+      {
+        "threshold": 0.9,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.8606469196012337,
+        "adl_recordings_with_alarm": 1,
+        "latency_median_s": 0.8399999999999999
+      },
+      {
+        "threshold": 0.95,
+        "sensitivity": 1.0,
+        "false_alarms_per_hour": 0.0,
+        "adl_recordings_with_alarm": 0,
+        "latency_median_s": 0.8499999999999996
+      }
+    ]
+  }
+}

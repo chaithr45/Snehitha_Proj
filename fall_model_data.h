@@ -8,7 +8,7 @@
 #define FALL_CH             6
 #define FALL_HOP            25   // run inference every 0.5 s
 #define FALL_CONSEC         2        // consecutive positive windows
-#define FALL_THRESHOLD      0.0500f
+#define FALL_THRESHOLD      0.5000f
 #define FALL_IN_SCALE       0.0982425809f
 #define FALL_IN_ZP          -7
 #define FALL_OUT_SCALE      0.0039062500f
