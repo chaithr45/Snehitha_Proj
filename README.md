@@ -21,6 +21,9 @@ a supervisor over LoRa / Wi-Fi.
 | `evaluate_deployment.py`, `deployment_eval.*` | Device-level evaluation: false alarms per hour, time to alarm, threshold sweep |
 | `fig_training_curves.png`, `fig_roc.png`, `fig_confusion_int8.png` | Figures for the paper |
 | `firmware/` | Phase 2: ESP32 firmware, C port of the pipeline, tests, supervisor station ([README](firmware/README.md)) |
+| `docs/Project_Report.pdf`, `docs/Project_Report.docx` | Detailed project report (Phase 1 and Phase 2) |
+| `docs/Presentation.pptx`, `docs/Presentation.pdf` | 14-slide presentation with speaker notes; the name line on the title slide is editable |
+| `DEMO.md` | How to run the live demo for an audience, no board needed |
 | `Snehitha_project.zip` | Original upload of Phase 1 (an earlier run, kept for reference) |
 
 ## Dataset
