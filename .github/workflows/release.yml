@@ -1,0 +1,55 @@
+name: release
+
+# Push a tag like v2.0.0 to publish ready-to-flash firmware as a GitHub release:
+# one merged image per chip (flash at address 0), which webapp/get_firmware.py downloads
+# for the web app's browser flasher, or which esptool writes directly.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    container: espressif/idf:v5.5.6
+    strategy:
+      matrix:
+        target: [esp32, esp32s3]
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build and merge into one image
+        shell: bash
+        working-directory: firmware
+        run: |
+          git config --global --add safe.directory '*'
+          . $IDF_PATH/export.sh
+          idf.py set-target ${{ matrix.target }} build
+          cd build
+          esptool.py --chip ${{ matrix.target }} merge_bin -o worker_safety_${{ matrix.target }}.bin @flash_args
+      - uses: actions/upload-artifact@v4
+        with:
+          name: merged-${{ matrix.target }}
+          path: firmware/build/worker_safety_${{ matrix.target }}.bin
+
+  publish:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: merged-*
+          merge-multiple: true
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -l
+          gh release create "$GITHUB_REF_NAME" worker_safety_esp32.bin worker_safety_esp32s3.bin \
+            --repo "$GITHUB_REPOSITORY" --title "Firmware $GITHUB_REF_NAME" \
+            --notes "Ready-to-flash firmware (one image per chip, write at address 0x0). Easiest: python webapp/get_firmware.py, then the web app's Setup page flashes it from the browser. Or: esptool.py --chip esp32 write_flash 0x0 worker_safety_esp32.bin. See HARDWARE.md."

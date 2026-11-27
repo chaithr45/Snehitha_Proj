@@ -24,6 +24,15 @@ menu "Worker safety monitor"
             int "Vibration motor GPIO (via transistor, high = on; -1 = none)"
             default 5 if IDF_TARGET_ESP32S3
             default 26
+
+        config SAFETY_LED_GPIO
+            int "Status LED GPIO (high = on; -1 = none)"
+            default 2 if IDF_TARGET_ESP32
+            default -1
+            help
+                GPIO 2 is the blue on-board LED of most ESP32 DevKit boards. The ESP32-S3
+                DevKitC has an addressable RGB LED instead, so connect a plain LED (with a
+                330 ohm resistor) to a free pin and set it here.
     endmenu
 
     config SAFETY_IMU_AXES
@@ -87,9 +96,14 @@ menu "Worker safety monitor"
     endchoice
 
     config SAFETY_WIFI_SSID
-        string "Wi-Fi SSID"
+        string "Wi-Fi SSID (empty: set it on the device's setup page)"
         depends on SAFETY_NET_WIFI
-        default "worksite"
+        default ""
+        help
+            Normally left empty: on its first start the device opens the Wi-Fi network
+            "WorkerSafety-XXXX" with a setup page where the network, the supervisor's
+            address and the worker's name are entered and saved in flash. A value here
+            is only the default for a device with nothing saved yet.
 
     config SAFETY_WIFI_PASSWORD
         string "Wi-Fi password"
@@ -99,18 +113,18 @@ menu "Worker safety monitor"
     config SAFETY_SUPERVISOR_URL
         string "Supervisor server base URL"
         depends on !SAFETY_NET_NONE
-        default "http://192.168.1.100:8080"
+        default ""
         help
             Alerts are POSTed as JSON to <url>/alert, status to <url>/telemetry.
-            Run firmware/tools/supervisor.py on that machine.
+            Run webapp/server.py on that machine. Normally set on the setup page.
 
     config SAFETY_WORKER_ID
-        string "Worker / device ID"
-        default "worker-01"
+        string "Worker name (empty: ws-xxxxxx from the MAC address; normally set on the setup page)"
+        default ""
 
     config SAFETY_TELEMETRY_PERIOD_S
         int "Telemetry period [s] (0 = off)"
-        default 30
+        default 5
 
     config SAFETY_TENSOR_ARENA_KB
         int "TFLite Micro tensor arena [KB]"
@@ -118,6 +132,15 @@ menu "Worker safety monitor"
         help
             Measured in QEMU: 7.3 KB used on the ESP32, 10.3 KB on the ESP32-S3
             (its vector kernels need more scratch space).
+
+    config SAFETY_DEMO_FALL
+        bool "Demo fall: double press (or the web app) plays a synthetic fall"
+        default y
+        help
+            For demonstrations: a double press of the button, or "Simulate a fall" in the
+            web app, plays a 6 s synthetic fall (main/demo_fall.h) into the motion-sensor
+            stream. The real model, pre-alarm and alert then run as after a real fall.
+            Switch off for a device that is really worn at work.
 
     config SAFETY_MODEL_SELFTEST
         bool "Check the model against reference outputs at boot"

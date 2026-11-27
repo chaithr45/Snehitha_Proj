@@ -57,7 +57,7 @@ if [ -n "${DEMO_AUTO_ACK:-}" ]; then
     ACK=(--auto-ack "$DEMO_AUTO_ACK")
 fi
 rm -f demo.log demo_alerts.jsonl
-python3 ../tools/supervisor.py --port "$PORT" --log demo_alerts.jsonl --offline-after 15 "${ACK[@]}" \
+python3 ../../webapp/server.py --db :memory: --port "$PORT" --log demo_alerts.jsonl --offline-after 15 "${ACK[@]}" \
     > supervisor.log 2>&1 &
 SUP=$!
 # shellcheck disable=SC2086

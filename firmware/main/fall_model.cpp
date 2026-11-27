@@ -126,3 +126,21 @@ extern "C" bool fall_model_selftest(void)
     return true;
 #endif
 }
+
+extern "C" uint32_t fall_model_benchmark_us(int runs)
+{
+    static int8_t zeros[FALL_WIN * FALL_CH];
+    int64_t total = 0, worst = 0;
+    for (int i = 0; i < runs; i++) {
+        const int64_t t0 = esp_timer_get_time();
+        fall_model_run(zeros, NULL);
+        const int64_t dt = esp_timer_get_time() - t0;
+        total += dt;
+        worst = dt > worst ? dt : worst;
+    }
+    const uint32_t avg = runs > 0 ? (uint32_t)(total / runs) : 0;
+    ESP_LOGI(TAG, "MODEL BENCHMARK: %.3f ms per inference (worst %.3f ms, %d runs, CPU %d MHz); "
+                  "a decision is needed every %d ms", (double)avg / 1000.0, (double)worst / 1000.0, runs,
+             CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ, 1000 * FALL_HOP / FALL_FS_HZ);
+    return avg;
+}

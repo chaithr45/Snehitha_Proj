@@ -18,3 +18,10 @@ firmware/sdkconfig
 firmware/sdkconfig.old
 firmware/managed_components/
 build/
+
+# research experiment caches (KFall-derived predictions)
+research/results/cache/
+
+# downloaded firmware images and the web app database
+webapp/firmware/
+webapp/data/

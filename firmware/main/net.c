@@ -14,6 +14,10 @@
 #include "freertos/event_groups.h"
 #include "freertos/task.h"
 #include "pipeline.h"
+#include "settings.h"
+#include "status_led.h"
+#include "esp_app_desc.h"
+#include "esp_heap_caps.h"
 
 #if CONFIG_SAFETY_NET_WIFI
 #include "esp_wifi.h"
@@ -26,7 +30,13 @@
 #include "esp_http_client.h"
 #endif
 
-#define BODY_MAX 384
+#define BODY_MAX 448
+#define TELEMETRY_MAX 768
+#if CONFIG_SAFETY_DEMO_FALL
+#define DEMO_ENABLED "true"
+#else
+#define DEMO_ENABLED "false"
+#endif
 #define QUEUE_LEN 16          // messages waiting for the supervisor
 #define ACK_TRACK 32          // delivered alerts waiting for an acknowledgment
 #define ACK_POLL_MS 3000      // status poll while an acknowledgment is outstanding
@@ -48,6 +58,12 @@ static int s_head, s_count;
 #endif
 static uint32_t s_boot, s_next_n = 1;
 static volatile uint32_t s_queued, s_delivered, s_need_ack, s_acked;
+static volatile bool s_link_up, s_server_ok;
+
+static void update_led(void)
+{
+    status_led_set(!s_link_up ? LED_CONNECTING : s_server_ok ? LED_ONLINE : LED_NO_SERVER);
+}
 
 static void fmt_num(char *buf, size_t n, float v, int decimals)
 {
@@ -82,6 +98,7 @@ bool net_flush(uint32_t timeout_ms)
 #else
 
 static EventGroupHandle_t s_ev;
+static char s_ip[16] = "";
 static TaskHandle_t s_task;
 static uint32_t s_wait_ack[ACK_TRACK];
 static int s_wait_n;
@@ -109,7 +126,7 @@ uint32_t net_send_alert(const char *event, const char *detail, double t, float h
     snprintf(m.body, sizeof(m.body),
              "{\"type\":\"alert\",\"id\":\"%06lx-%lu\",\"worker\":\"%s\",\"event\":\"%s\",\"detail\":\"%s\","
              "\"needs_ack\":%s,\"t\":%.2f,\"hr\":%s,\"spo2\":%s,\"uptime_s\":%.1f%s%s}",
-             (unsigned long)s_boot, (unsigned long)m.n, CONFIG_SAFETY_WORKER_ID, event, detail,
+             (unsigned long)s_boot, (unsigned long)m.n, settings_get()->worker, event, detail,
              needs_ack ? "true" : "false", t, h, s, uptime_s(), extra_json ? "," : "", extra_json ? extra_json : "");
     s_queued++;
 #if CONFIG_SAFETY_NET_NONE
@@ -142,7 +159,10 @@ uint32_t net_send_alert(const char *event, const char *detail, double t, float h
 static void on_got_ip(void *arg, esp_event_base_t base, int32_t id, void *data)
 {
     const ip_event_got_ip_t *e = (const ip_event_got_ip_t *)data;
-    ESP_LOGI(TAG, "network up, IP " IPSTR ", supervisor %s", IP2STR(&e->ip_info.ip), CONFIG_SAFETY_SUPERVISOR_URL);
+    ESP_LOGI(TAG, "network up, IP " IPSTR ", supervisor %s", IP2STR(&e->ip_info.ip), settings_get()->server);
+    snprintf(s_ip, sizeof(s_ip), IPSTR, IP2STR(&e->ip_info.ip));
+    s_link_up = true;
+    update_led();
     xEventGroupSetBits(s_ev, BIT_UP);
 }
 
@@ -152,27 +172,45 @@ static void on_wifi(void *arg, esp_event_base_t base, int32_t id, void *data)
     if (id == WIFI_EVENT_STA_START) {
         esp_wifi_connect();
     } else if (id == WIFI_EVENT_STA_DISCONNECTED) {
+        const wifi_event_sta_disconnected_t *d = (const wifi_event_sta_disconnected_t *)data;
+        static uint32_t fails;
         xEventGroupClearBits(s_ev, BIT_UP);
-        ESP_LOGW(TAG, "Wi-Fi disconnected, reconnecting (alerts wait in the queue)");
+        s_link_up = false;
+        update_led();
+        fails++;
+        if (d->reason == WIFI_REASON_NO_AP_FOUND) {
+            ESP_LOGW(TAG, "Wi-Fi \"%s\" not found (2.4 GHz only), retrying; alerts wait in the queue",
+                     settings_get()->ssid);
+        } else if (d->reason == WIFI_REASON_AUTH_FAIL || d->reason == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT ||
+                   d->reason == WIFI_REASON_HANDSHAKE_TIMEOUT) {
+            ESP_LOGW(TAG, "Wi-Fi password rejected by \"%s\" (reason %d), retrying", settings_get()->ssid, d->reason);
+        } else {
+            ESP_LOGW(TAG, "Wi-Fi disconnected (reason %d), reconnecting; alerts wait in the queue", d->reason);
+        }
+        if (fails % 20 == 0) {
+            ESP_LOGW(TAG, "still no Wi-Fi: to change the network, hold the button for 10 s (setup mode)");
+        }
         esp_wifi_connect();
     }
 }
 
 static void start_link(void)
 {
-    esp_netif_create_default_wifi_sta();
+    esp_netif_t *netif = esp_netif_create_default_wifi_sta();
+    esp_netif_set_hostname(netif, settings_device_id());
     const wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, on_wifi, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, on_got_ip, NULL));
     wifi_config_t wc;
     memset(&wc, 0, sizeof(wc));
-    strlcpy((char *)wc.sta.ssid, CONFIG_SAFETY_WIFI_SSID, sizeof(wc.sta.ssid));
-    strlcpy((char *)wc.sta.password, CONFIG_SAFETY_WIFI_PASSWORD, sizeof(wc.sta.password));
+    strlcpy((char *)wc.sta.ssid, settings_get()->ssid, sizeof(wc.sta.ssid));
+    strlcpy((char *)wc.sta.password, settings_get()->pass, sizeof(wc.sta.password));
+    wc.sta.threshold.authmode = settings_get()->pass[0] ? WIFI_AUTH_WPA_PSK : WIFI_AUTH_OPEN;
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wc));
     ESP_ERROR_CHECK(esp_wifi_start());
-    ESP_LOGI(TAG, "alert link: Wi-Fi \"%s\"", CONFIG_SAFETY_WIFI_SSID);
+    ESP_LOGI(TAG, "alert link: Wi-Fi \"%s\", supervisor %s", settings_get()->ssid, settings_get()->server);
 }
 #elif CONFIG_SAFETY_NET_OPENETH
 static void start_link(void)
@@ -221,6 +259,11 @@ static void handle_reply(const char *body)
             }
         }
     }
+    const cJSON *cmd = cJSON_GetObjectItem(root, "cmd");
+    if (cJSON_IsString(cmd) && strcmp(cmd->valuestring, "demo_fall") == 0) {
+        ESP_LOGW(TAG, "supervisor asked for a demo fall");
+        pipeline_demo_fall();
+    }
     cJSON_Delete(root);
 }
 
@@ -252,7 +295,7 @@ static bool post(const char *path, const char *body)
     reply.len = 0;
     reply.buf[0] = 0;
     char url[192];
-    snprintf(url, sizeof(url), "%s%s", CONFIG_SAFETY_SUPERVISOR_URL, path);
+    snprintf(url, sizeof(url), "%s%s", settings_get()->server, path);
     const esp_http_client_config_t cfg = {
         .url = url,
         .method = HTTP_METHOD_POST,
@@ -265,14 +308,22 @@ static bool post(const char *path, const char *body)
         return false;
     }
     esp_http_client_set_header(c, "Content-Type", "application/json");
+    if (settings_get()->token[0]) {
+        esp_http_client_set_header(c, "X-Device-Token", settings_get()->token);
+    }
     esp_http_client_set_post_field(c, body, (int)strlen(body));
     const esp_err_t err = esp_http_client_perform(c);
     const int status = err == ESP_OK ? esp_http_client_get_status_code(c) : -1;
     esp_http_client_cleanup(c);
     if (err != ESP_OK || status < 200 || status >= 300) {
-        ESP_LOGW(TAG, "POST %s failed (%s, HTTP %d)", url, esp_err_to_name(err), status);
+        ESP_LOGW(TAG, "POST %s failed (%s, HTTP %d)%s", url, esp_err_to_name(err), status,
+                 status == 401 ? ": wrong or missing device token" : "");
+        s_server_ok = false;
+        update_led();
         return false;
     }
+    s_server_ok = true;
+    update_led();
     handle_reply(reply.buf);
     return true;
 }
@@ -281,22 +332,35 @@ static void send_telemetry(void)
 {
     pipeline_status_t st;
     pipeline_get_status(&st);
-    char h[16], s[16], body[BODY_MAX];
+    char h[16], s[16], rssi[8] = "null";
+    static char body[TELEMETRY_MAX];
     fmt_num(h, sizeof(h), st.hr, 0);
     fmt_num(s, sizeof(s), st.spo2, 0);
     char alert[24] = "null";
     if (st.active_alert_id) {
         snprintf(alert, sizeof(alert), "\"%06lx-%lu\"", (unsigned long)s_boot, (unsigned long)st.active_alert_id);
     }
+#if CONFIG_SAFETY_NET_WIFI
+    wifi_ap_record_t ap;
+    if (esp_wifi_sta_get_ap_info(&ap) == ESP_OK) {
+        snprintf(rssi, sizeof(rssi), "%d", ap.rssi);
+    }
+#endif
     snprintf(body, sizeof(body),
-             "{\"type\":\"telemetry\",\"worker\":\"%s\",\"state\":\"%s\",\"hr\":%s,\"spo2\":%s,"
+             "{\"type\":\"telemetry\",\"worker\":\"%s\",\"device\":\"%s\",\"state\":\"%s\",\"hr\":%s,\"spo2\":%s,"
              "\"vitals_reliable\":%s,\"worn\":%s,\"posture\":\"%s\",\"tilt_deg\":%.0f,\"motion_g\":%.3f,"
              "\"sensor_fault\":%s,\"active_alert\":%s,\"acked\":%s,\"fall_prob\":%.3f,\"windows\":%lu,"
-             "\"infer_us_avg\":%lu,\"queued\":%d,\"uptime_s\":%.1f}",
-             CONFIG_SAFETY_WORKER_ID, sc_state_name(st.state), h, s, st.vitals_reliable ? "true" : "false",
-             st.worn ? "true" : "false", st.tilt_deg > 60.0f ? "lying" : "upright", (double)st.tilt_deg,
-             (double)st.motion_g, st.sensor_fault ? "true" : "false", alert, st.acked ? "true" : "false",
-             (double)st.last_prob, (unsigned long)st.windows, (unsigned long)st.infer_us_avg, s_count, uptime_s());
+             "\"infer_us_avg\":%lu,\"infer_us_max\":%lu,\"queued\":%d,\"uptime_s\":%.1f,\"rssi\":%s,\"ip\":\"%s\","
+             "\"fw\":\"%s\",\"calibrated\":%s,\"demo\":%s,\"demo_playing\":%s,\"heap_kb\":%lu}",
+             settings_get()->worker, settings_device_id(), sc_state_name(st.state), h, s,
+             st.vitals_reliable ? "true" : "false", st.worn ? "true" : "false",
+             st.tilt_deg > 60.0f ? "lying" : "upright", (double)st.tilt_deg, (double)st.motion_g,
+             st.sensor_fault ? "true" : "false", alert, st.acked ? "true" : "false", (double)st.last_prob,
+             (unsigned long)st.windows, (unsigned long)st.infer_us_avg, (unsigned long)st.infer_us_max, s_count,
+             uptime_s(), rssi, s_ip, esp_app_get_description()->version,
+             settings_get()->calibrated ? "true" : "false", DEMO_ENABLED,
+             st.demo_playing ? "true" : "false",
+             (unsigned long)(heap_caps_get_free_size(MALLOC_CAP_DEFAULT) / 1024));
     post("/telemetry", body);
 }
 
@@ -368,6 +432,7 @@ void net_init(void)
     s_ev = xEventGroupCreate();
     xEventGroupSetBits(s_ev, BIT_IDLE);
     xTaskCreate(task, "net", 6144, NULL, 5, &s_task);
+    update_led();
     start_link();
 }
 

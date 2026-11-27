@@ -11,6 +11,10 @@
 #include "fall_model.h"
 #include "freertos/FreeRTOS.h"
 #include "net.h"
+#include "settings.h"
+#if CONFIG_SAFETY_DEMO_FALL
+#include "demo_fall.h"
+#endif
 
 #define PPG_N (SC_PPG_FS * CONFIG_SAFETY_PPG_WINDOW_S)
 #define MOTION_N 50      // motion / posture over the last 1 s
@@ -46,6 +50,7 @@ static bool s_worn = true, s_press, s_reset, s_fault, s_acked;
 static uint32_t s_windows, s_infer_us_max, s_alert_id;
 static uint64_t s_infer_us_sum;
 static pipeline_event_hook_t s_hook;
+static int s_demo_idx = -1;   // next sample of the demo clip, -1 = not playing
 
 void pipeline_init(void)
 {
@@ -112,7 +117,29 @@ void pipeline_get_status(pipeline_status_t *out)
     out->infer_us_avg = s_windows ? (uint32_t)(s_infer_us_sum / s_windows) : 0;
     out->infer_us_max = s_infer_us_max;
     out->active_alert_id = s_fsm.state == SC_STATE_ALERT ? s_alert_id : 0;
+    out->demo_playing = s_demo_idx >= 0;
     taskEXIT_CRITICAL(&s_mux);
+}
+
+bool pipeline_demo_fall(void)
+{
+#if CONFIG_SAFETY_DEMO_FALL
+    bool ok = false;
+    taskENTER_CRITICAL(&s_mux);
+    if (s_fsm.state == SC_STATE_NORMAL && s_demo_idx < 0 && !s_fault && s_imu_count > 0) {
+        s_demo_idx = 0;
+        ok = true;
+    }
+    taskEXIT_CRITICAL(&s_mux);
+    if (ok) {
+        ESP_LOGW(TAG, "DEMO: playing a synthetic fall into the motion-sensor stream (%d samples)", DEMO_FALL_N);
+    } else {
+        ESP_LOGW(TAG, "DEMO: not started (motion sensor not running, or a pre-alarm/alert is active)");
+    }
+    return ok;
+#else
+    return false;
+#endif
 }
 
 static void notify(double t, sc_event_t ev)
@@ -203,17 +230,48 @@ static void on_event(double t, sc_event_t ev, const sc_fsm_input_t *in, float pr
     notify(t, ev);
 }
 
-void pipeline_push_imu(const float sample[SC_CH])
+// Sensor frame -> the KFall frame the model was trained in: the orientation calibration
+// from the setup page (identity when not calibrated), or a demo clip sample.
+static void to_model_frame(const float in[SC_CH], float out[SC_CH])
 {
-    float y[SC_CH];
+#if CONFIG_SAFETY_DEMO_FALL
+    if (s_demo_idx >= 0) {
+        const int16_t *d = DEMO_FALL[s_demo_idx];
+        for (int c = 0; c < 3; c++) {
+            out[c] = (float)d[c] / 2048.0f;          // MPU6050 counts at +-16 g
+            out[3 + c] = (float)d[3 + c] / 16.4f;    // and +-2000 dps
+        }
+        if (++s_demo_idx >= DEMO_FALL_N) {
+            s_demo_idx = -1;
+            ESP_LOGW(TAG, "DEMO: clip finished, live sensor data again");
+        }
+        return;
+    }
+#endif
+    const settings_t *cfg = settings_get();
+    if (!cfg->calibrated) {
+        memcpy(out, in, SC_CH * sizeof(float));
+        return;
+    }
+    for (int r = 0; r < 3; r++) {
+        const float *row = cfg->rot + 3 * r;
+        out[r] = row[0] * in[0] + row[1] * in[1] + row[2] * in[2];
+        out[3 + r] = row[0] * in[3] + row[1] * in[4] + row[2] * in[5];
+    }
+}
+
+void pipeline_push_imu(const float raw[SC_CH])
+{
+    float sample[SC_CH], y[SC_CH];
+    to_model_frame(raw, sample);
     sc_lpf_process(&s_lpf, sample, y);
     s_raw_mag[s_imu_count % SC_WIN] = sqrtf(sample[0] * sample[0] + sample[1] * sample[1] + sample[2] * sample[2]);
     s_imu_count++;
     const double t = (double)s_imu_count / s_p->fs_hz;
 
     // frozen-sensor monitor (real sensor noise never repeats a sample exactly)
-    s_same = memcmp(sample, s_last_raw, sizeof(s_last_raw)) == 0 ? s_same + 1 : 1;
-    memcpy(s_last_raw, sample, sizeof(s_last_raw));
+    s_same = memcmp(raw, s_last_raw, sizeof(s_last_raw)) == 0 ? s_same + 1 : 1;
+    memcpy(s_last_raw, raw, sizeof(s_last_raw));
     if (!s_fault && s_same >= STUCK_N) {
         set_fault(t, true, "motion sensor data frozen");
     } else if (s_fault && s_same == 1) {

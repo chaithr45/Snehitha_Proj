@@ -32,6 +32,11 @@ void pipeline_request_reset(void);
 // The supervisor acknowledged alert `alert_id` ("help is on the way").
 void pipeline_on_ack(uint32_t alert_id);
 
+// Demonstration: play a short synthetic fall (main/demo_fall.h) into the motion-sensor
+// stream, so the real model, pre-alarm and alert can be shown without anyone falling.
+// Only while nothing else is going on; false if it did not start (or the feature is off).
+bool pipeline_demo_fall(void);
+
 typedef struct {
     sc_state_t state;
     float hr, spo2;            // NAN when not available
@@ -41,6 +46,7 @@ typedef struct {
     uint32_t windows;          // model evaluations so far
     uint32_t infer_us_avg, infer_us_max;
     uint32_t active_alert_id;  // 0 = none
+    bool demo_playing;         // the demo fall clip is replacing the sensor data
 } pipeline_status_t;
 
 void pipeline_get_status(pipeline_status_t *out);

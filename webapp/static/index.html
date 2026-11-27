@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Worker Safety Monitor</title>
+<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 4 7v8c0 7.4 5.1 13.6 12 15 6.9-1.4 12-7.6 12-15V7L16 2z" fill="#257de0"/><path d="M9 17h4l2-5 3 9 2-4h3" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Worker Safety Monitor</span>
+  </div>
+  <nav aria-label="Pages">
+    <a href="#/" data-nav="overview">Overview</a>
+    <a href="#/alerts" data-nav="alerts">Alerts <span id="nav-open" class="badge" hidden></span></a>
+    <a href="#/setup" data-nav="setup">Setup</a>
+  </nav>
+  <div class="tools">
+    <span id="live" class="live" role="status">Connecting…</span>
+    <button id="sound" class="btn small" type="button" aria-pressed="false">🔇 Sound off</button>
+  </div>
+</header>
+<section id="banner" class="banner" aria-live="assertive" hidden></section>
+<main id="view"><p class="muted">Loading…</p></main>
+<noscript><main><p>This page needs JavaScript. Use the <a href="/simple">simple view</a> instead.</p></main></noscript>
+<script src="/static/app.js"></script>
+</body>
+</html>

@@ -48,7 +48,7 @@ EOF
 NIC=(-nic none)
 if [ $NET -eq 1 ]; then
     # supervisor comes up late on purpose: alerts must wait in the device's queue
-    (sleep "$SUP_DELAY_S"; exec python3 ../tools/supervisor.py --port "$PORT" --log supervisor.jsonl \
+    (sleep "$SUP_DELAY_S"; exec python3 ../../webapp/server.py --db :memory: --port "$PORT" --log supervisor.jsonl \
         --auto-ack 1 > supervisor.log 2>&1) &
     SUP=$!
     NIC=(-nic user,model=open_eth)

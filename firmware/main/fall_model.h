@@ -34,6 +34,8 @@ float fall_model_run(const int8_t *input, int8_t *raw_out);
 size_t fall_model_arena_used(void);
 // Compare TFLM outputs with TFLite reference-kernel outputs (selftest_data.h).
 bool fall_model_selftest(void);
+// Time `runs` inferences on a zero input and log the result (for papers and data sheets).
+uint32_t fall_model_benchmark_us(int runs);
 
 #ifdef __cplusplus
 }
