@@ -25,3 +25,10 @@ research/results/cache/
 # downloaded firmware images and the web app database
 webapp/firmware/
 webapp/data/
+
+# LaTeX build files
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.blg
+paper/*.bbl

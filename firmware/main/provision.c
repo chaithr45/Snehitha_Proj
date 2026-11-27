@@ -293,19 +293,19 @@ static esp_err_t page_save(httpd_req_t *r)
     if (!pass[0] && strcmp(ssid, st->ssid) == 0) {
         strlcpy(pass, st->pass, sizeof(pass));   // left empty = keep the saved password
     }
-    char url[128];
+    char url[sizeof(server) + 8] = "";
     if (strncmp(server, "http://", 7) != 0 && strncmp(server, "https://", 8) != 0) {
-        snprintf(url, sizeof(url), "http://%s", server);
-    } else {
-        strlcpy(url, server, sizeof(url));
+        strlcpy(url, "http://", sizeof(url));
     }
+    strlcat(url, server, sizeof(url));
     size_t n = strlen(url);
     while (n > 0 && (url[n - 1] == '/' || url[n - 1] == ' ')) {
         url[--n] = 0;
     }
-    if (!ssid[0] || n <= 7 || strncmp(url, "https://", 8) == 0) {
+    if (!ssid[0] || n <= 7 || n >= sizeof(settings_get()->server) || strncmp(url, "https://", 8) == 0) {
         snprintf(s_msg, sizeof(s_msg), "%s", !ssid[0] ? "Enter the Wi-Fi network name." :
                  n <= 7 ? "Enter the server address shown on the web app's Setup page." :
+                 n >= sizeof(settings_get()->server) ? "The server address is too long." :
                  "Use the http:// address of the web app (https is not supported).");
         return redirect_home(r);
     }

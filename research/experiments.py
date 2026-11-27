@@ -405,6 +405,11 @@ def plot_robustness(rob, path):
             v = [rob[m][str(g)][key] * (100 if key == "sensitivity" else 1) for g in ANGLES]
             a.plot(ANGLES, v, color=colors[m], linewidth=2, marker=marker[m], markersize=5, label=short[m])
     ax[1].set_yscale("symlog", linthresh=1)
+    from matplotlib.ticker import FixedLocator, FuncFormatter
+    ax[1].yaxis.set_major_locator(FixedLocator([0, 1, 3, 10, 30]))
+    ax[1].yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
+    ax[1].yaxis.set_minor_locator(FixedLocator([]))
+    ax[1].set_title("False alarms per hour (log scale above 1)", loc="left", color=ink, fontsize=9)
     ax[1].legend(frameon=False, fontsize=7, labelcolor=muted, loc="upper left")
     fig.tight_layout()
     fig.savefig(path, dpi=300)
@@ -431,7 +436,7 @@ def plot_latency(lat, path):
     a.set_xlim(-0.5, 4)
     a.set_xlabel("time from impact to alarm (s)", color=muted, fontsize=8)
     a.set_title("Detected falls alarmed by time t (%)", loc="left", color=ink, fontsize=9)
-    a.legend(frameon=False, fontsize=7, labelcolor=muted, loc="lower right")
+    a.legend(frameon=False, fontsize=7, labelcolor=muted, loc="upper left")
     fig.tight_layout()
     fig.savefig(path, dpi=300)
     plt.close(fig)

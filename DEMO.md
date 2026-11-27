@@ -2,8 +2,9 @@
 
 The real firmware runs in the **ESP32 emulator** on your laptop and plays a 4-minute
 story in real time: normal work, jogging, two falls, a racing heart, a slow collapse
-and a sensor failure. A **supervisor page** in your browser shows each alert as it
-arrives; the professor clicks **Acknowledge** and the worker's device answers. No board
+and a sensor failure. The **supervisor web app** in your browser shows each alert as it
+arrives (with sound, once you click *Sound on*); the professor clicks **Acknowledge** and the
+worker's device answers. No board
 is needed.
 
 ## Before the meeting (once, about 15 minutes)
@@ -44,14 +45,14 @@ is needed.
 | 0:00 | `SEGMENT normal work` | worker appears, *online*; heart rate after ~10 s | "The device sends its status every few seconds." |
 | 0:13 | `SEGMENT jogging...` | note *vitals paused (moving)* | "Running makes the pulse sensor read a fake 165 bpm. The device knows it is moving and ignores it, so there is no false alarm." |
 | 0:40 | `EVENT FALL_SUSPECTED`, `BUZZER: beeping + vibrating` | nothing yet | "The neural network detected a fall within a second. The worker has 10 s to press *I'm OK*." |
-| 0:46 | `EVENT ALERT_FALL (post-fall inactivity)`, `BUZZER: ALARM` | red **ALERT_FALL**, posture *lying*, impact *5.6 g* | "The worker is not moving, so the alert goes out with the posture and impact force." **Click Acknowledge.** |
-| | `ACK: supervisor acknowledged`, `BUZZER: two short beeps...` | *Acknowledged* time | "The device tells the worker help is on the way." |
+| 0:46 | `EVENT ALERT_FALL (post-fall inactivity)`, `BUZZER: ALARM` | red **Fall** banner: *lying*, impact *5.6 g* | "The worker is not moving, so the alert goes out with the posture and impact force." **Click Acknowledge.** |
+| | `ACK: supervisor acknowledged`, `BUZZER: two short beeps...` | *✓ acknowledged after 0:12* in the worker's alert list | "The device tells the worker help is on the way." |
 | ~1:05 | `EVENT FALL_SUSPECTED`, `BUTTON short press`, `EVENT CANCELLED` | nothing | "A false alarm is cancelled on the device. The supervisor is never bothered." |
-| ~1:40 | `EVENT ALERT_VITALS` | **ALERT_VITALS**, HR 150 | "150 bpm for 10 s while not running." **Click Acknowledge.** |
-| ~2:50 | `EVENT MAN_DOWN_SUSPECTED`, then `ALERT_MAN_DOWN` | **ALERT_MAN_DOWN**, *lying* | "A slow collapse with no impact, like fainting. The fall model cannot see it, but the man-down rule can: lying still for 30 s." **Click Acknowledge.** |
+| ~1:40 | `EVENT ALERT_VITALS` | red **Abnormal vitals** banner, HR 150 | "150 bpm for 10 s while not running." **Click Acknowledge.** |
+| ~2:50 | `EVENT MAN_DOWN_SUSPECTED`, then `ALERT_MAN_DOWN` | red **Man down** banner, *lying* | "A slow collapse with no impact, like fainting. The fall model cannot see it, but the man-down rule can: lying still for 30 s." **Click Acknowledge.** |
 | ~3:30 | `MAN_DOWN_SUSPECTED`, then `EVENT MOVED` | nothing | "The worker moved during the pre-alarm, so it cancels itself." |
 | ~4:10 | (standing still) | nothing | "Standing still is normal, so no alarm." |
-| ~4:50 | `EVENT SENSOR_FAULT`, then `SENSOR_OK` | **DEVICE_FAULT**, then *DEVICE_OK* | "If the motion sensor fails, the supervisor is told that fall detection is down." |
+| ~4:50 | `EVENT SENSOR_FAULT`, then `SENSOR_OK` | **Motion sensor fault**, then *recovered* | "If the motion sensor fails, the supervisor is told that fall detection is down." |
 | end | `MODEL SELFTEST PASS: 28/28`, `REPLAY RESULT: PASS`, `DEMO FINISHED` | | "The emulated chip ran the same int8 model as Python, bit for bit, and every event matched the Python reference." |
 
 Press Ctrl+C to stop. To run it again: `docker start -ai safety-demo`.
@@ -80,8 +81,9 @@ Press Ctrl+C to stop. To run it again: `docker start -ai safety-demo`.
 Parts (about USD 15-20): ESP32 DevKit, MPU6050 (GY-521) board, MAX30102 board, active
 buzzer, small vibration motor with an NPN transistor, a push button, breadboard and
 wires. Wiring, axis orientation and flashing are in
-[`firmware/README.md`](firmware/README.md). Run `supervisor.py` on your laptop on the
-same Wi-Fi.
+[`HARDWARE.md`](HARDWARE.md), which also has a 10-minute demo script for the real device
+(including a safe "demo fall" with a double press). Run `python webapp/server.py` on your
+laptop on the same Wi-Fi.
 
 Then:
 - **Fall:** wear it at the lower back, with the Y axis pointing down. Do a controlled

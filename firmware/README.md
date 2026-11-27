@@ -42,10 +42,12 @@ to deploy a new model.
 |---|---|
 | `components/safety_core/` | Portable C: filter, windows, quantisation, decision rule, HR/SpO2, posture, alert state machine. Builds for the ESP32 **and** on a PC |
 | `main/` | ESP-IDF app: sensor drivers, TFLite Micro, buzzer/vibration, button, Wi-Fi link, replay mode |
+| `main/provision.c`, `main/settings.c` | Setup mode (Wi-Fi network `WorkerSafety-XXXX` with a setup page) and the settings it saves in flash |
+| `main/demo_fall.h` | Synthetic fall clip for demonstrations (`tools/gen_demo_fall.py`) |
 | `main/Kconfig.projbuild` | Settings in `idf.py menuconfig` → *Worker safety monitor* |
 | `test/host/` | Parity tests: C port vs `phase1_pipeline.py` and `tools/device_model.py` |
 | `tools/device_model.py` | Python reference model of the whole device (used by the tests) |
-| `tools/supervisor.py` | Supervisor station: alerts, acknowledgments, live status page (`test_supervisor.py`: its tests) |
+| `tools/supervisor.py` | Old name of the supervisor; now starts the web app in [`../webapp/`](../webapp/server.py) |
 | `tools/run_qemu_replay.sh` | End-to-end test in the ESP32 / ESP32-S3 emulator |
 | `tools/gen_replay.py`, `tools/gen_ppg_coeffs.py` | Regenerate `main/replay_data.h`, `main/selftest_data.h`, `sc_ppg_coeffs.h` |
 
@@ -58,15 +60,18 @@ to deploy a new model.
 | Button to GND ("I'm OK" / long press = clear alert) | 0 | 0 |
 | Active buzzer (high = on) | 25 | 4 |
 | Vibration motor via NPN/MOSFET (high = on) | 26 | 5 |
+| Status LED (high = on) | 2 (on-board) | none (set one in `menuconfig`) |
 
-All pins can be changed in `menuconfig`. Use 4.7 kΩ pull-ups on SDA/SCL; the internal
+Step-by-step wiring, flashing without a toolchain, setup from a phone and a demo script:
+[`HARDWARE.md`](../HARDWARE.md). All pins can be changed in `menuconfig`. Use 4.7 kΩ pull-ups on SDA/SCL; the internal
 ones are too weak for 400 kHz. Power both sensor boards from 3.3 V.
 
 **Mounting matters.** The model was trained on KFall, where the sensor sits on the
-**lower back with its Y axis pointing down** (standing still reads `ay ≈ -1 g`).
-Mount the MPU6050 the same way, or set *MPU6050 axis mapping* in `menuconfig`, for
-example `+X-Y-Z` for a board mounted with Y pointing up. Posture for man-down uses the
-same axes. Check it once: standing still, the telemetry should say `"posture":"upright"`
+**lower back with its Y axis pointing down** (standing still reads `ay ≈ -1 g`) and Z
+pointing forward. Either mount the MPU6050 that way, or calibrate on the setup page
+(stand upright, then bend forward: the device computes the rotation into the KFall frame
+and stores it in flash), or set *MPU6050 axis mapping* in `menuconfig`. Posture for
+man-down uses the same frame. Check it once: standing still, the telemetry should say `"posture":"upright"`
 with `tilt_deg` near 0; lying on the back, `"lying"` near 90.
 
 ## Build and flash
@@ -79,9 +84,11 @@ idf.py set-target esp32
 ```bash
 idf.py menuconfig
 ```
-In *Worker safety monitor* set the Wi-Fi SSID and password, the supervisor URL (the PC
-running `supervisor.py`, e.g. `http://192.168.1.100:8080`) and the worker ID. *Alert
-rules* holds the man-down times and the vitals motion limit.
+Nothing has to be set there: on its first start the device opens the Wi-Fi network
+`WorkerSafety-XXXX` with a setup page (network, supervisor address, worker name, device
+token, orientation calibration), saved in flash. Hold the button 10 s to return to it.
+*Alert rules* holds the man-down times and the vitals motion limit; *Demo fall* the
+double-press demo, which should be switched off for a device really worn at work.
 ```bash
 idf.py build flash monitor
 ```
@@ -89,15 +96,23 @@ idf.py build flash monitor
 Use `idf.py set-target esp32s3` for an ESP32-S3 board. TensorFlow Lite Micro is fetched
 automatically from the Espressif component registry on the first build.
 
-## Supervisor station
+Ready-made images: every CI run uploads `worker_safety_esp32.bin` (one merged image,
+write at 0x0), and pushing a tag `v*` publishes them as a GitHub release
+(`.github/workflows/release.yml`).
+
+At boot the log shows `SENSORS: MPU6050 found, MAX30102 found` and
+`MODEL BENCHMARK: ... ms per inference` (the time on the real chip, for the paper).
+
+## Supervisor web app
 
 ```bash
-python tools/supervisor.py --port 8080 --log alerts.jsonl
+python webapp/server.py
 ```
 
-Open `http://<pc>:8080/`: every worker's state, heart rate, SpO2, posture, online /
-offline, and every alert with an **Acknowledge** button. Alerts also print in the console
-and go to `alerts.jsonl`. Alert format (POST `/alert`):
+Open `http://localhost:8080/`: every worker's state, heart rate and SpO2 with charts,
+posture, online / offline, and every alert with an **Acknowledge** button, sound and
+history. See [`../webapp/`](../webapp/server.py) and `python webapp/server.py --help`.
+Alert format (POST `/alert`):
 
 ```json
 {"type":"alert","id":"3fa2c1-1","worker":"worker-01","event":"ALERT_FALL",
@@ -107,8 +122,10 @@ and go to `alerts.jsonl`. Alert format (POST `/alert`):
 
 `event` is `ALERT_FALL`, `ALERT_MAN_DOWN`, `ALERT_VITALS`, `DEVICE_FAULT` (need an
 acknowledgment), or `ALERT_CLEARED`, `DEVICE_OK` (notices). Every reply lists the IDs
-the supervisor has acknowledged. Devices POST status to `/telemetry` every 30 s, and
-every 3 s while waiting for an acknowledgment.
+the supervisor has acknowledged, and may carry `"cmd":"demo_fall"` (the web app's
+*Simulate a fall* button). Devices POST status to `/telemetry` every 5 s
+(*Telemetry period*), and every 3 s while waiting for an acknowledgment; with a device
+token set, every request carries `X-Device-Token`.
 
 ## On the device
 
@@ -117,6 +134,8 @@ every 3 s while waiting for an acknowledgment.
 | Fall suspected, or man-down pre-alarm | beep every 0.5 s + vibration | short press = "I'm OK"; for man-down, moving also cancels |
 | Alert sent | fast beeping, vibration pulses | long press (3 s) clears it after help arrives |
 | Supervisor acknowledged | two short beeps every 3 s | help is on the way |
+| Demo | | double press: plays the synthetic fall clip |
+| Setup | | hold 10 s (or 3 s right after power-on): setup mode |
 
 ## Tests
 
@@ -131,7 +150,7 @@ python firmware/test/host/gen_vectors.py --repo . --out build/host/vectors
 cmake -S firmware/test/host -B build/host && cmake --build build/host && ctest --test-dir build/host --output-on-failure -V
 ```
 ```bash
-python firmware/tools/test_supervisor.py
+python webapp/test_server.py
 ```
 
 Checks the low-pass filter against `scipy.signal.sosfilt`, the int8 model inputs, the

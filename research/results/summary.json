@@ -1,0 +1,1314 @@
+{
+ "protocol": {
+  "folds": 5,
+  "consec": 2,
+  "hop_s": 0.5,
+  "recordings": 5057,
+  "subjects": 32
+ },
+ "methods": {
+  "cnn_consec1": {
+   "falls": 2346,
+   "detected": 2346,
+   "sensitivity": 1.0,
+   "adl_recordings": 2711,
+   "adl_with_alarm": 6,
+   "specificity": 0.9977867945407599,
+   "f1": 0.9987228607918263,
+   "false_alarms": 6,
+   "adl_hours": 6.296161111111111,
+   "fa_per_h": 0.9529616371175028,
+   "fa_per_h_ci95": [
+    0.34972012542771047,
+    2.074196290732151
+   ],
+   "alarms_before_impact": 0,
+   "latency_s": {
+    "median": 0.3199999999999994,
+    "p95": 0.5999999999999996,
+    "within_1s": 0.9965899403239556
+   },
+   "bootstrap_ci95": {
+    "sensitivity": [
+     1.0,
+     1.0
+    ],
+    "specificity": [
+     0.9955406497494748,
+     0.9996320824135394
+    ],
+    "fa_per_h": [
+     0.15773922702391702,
+     1.9569314838820802
+    ]
+   },
+   "per_fold": {
+    "sensitivity": [
+     1.0,
+     0.0
+    ],
+    "specificity": [
+     0.9978876956552618,
+     0.002535061304504514
+    ],
+    "f1": [
+     0.998805330565524,
+     0.001414895792368703
+    ],
+    "fa_per_h": [
+     0.911868924348718,
+     1.1020348860040725
+    ]
+   },
+   "fold_info": [
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 21,
+     "tflite_int8_bytes": 19272,
+     "threshold": 0.51,
+     "seconds": 48.60283041000366
+    },
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 40,
+     "threshold": 0.5,
+     "seconds": 82.80898880958557
+    },
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 25,
+     "threshold": 0.91,
+     "seconds": 54.38579797744751
+    },
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 30,
+     "threshold": 0.51,
+     "seconds": 66.50790858268738
+    },
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 32,
+     "threshold": 0.5,
+     "seconds": 66.95019102096558
+    }
+   ]
+  },
+  "cnn_consec3": {
+   "falls": 2346,
+   "detected": 2342,
+   "sensitivity": 0.9982949701619779,
+   "adl_recordings": 2711,
+   "adl_with_alarm": 4,
+   "specificity": 0.9985245296938399,
+   "f1": 0.9982949701619779,
+   "false_alarms": 4,
+   "adl_hours": 6.296161111111111,
+   "fa_per_h": 0.6353077580783352,
+   "fa_per_h_ci95": [
+    0.1730999817814369,
+    1.626640185132797
+   ],
+   "alarms_before_impact": 0,
+   "latency_s": {
+    "median": 1.3199999999999994,
+    "p95": 1.5999999999999996,
+    "within_1s": 0.04654141759180188
+   },
+   "bootstrap_ci95": {
+    "sensitivity": [
+     0.9948252999474276,
+     1.0
+    ],
+    "specificity": [
+     0.996665369821394,
+     1.0
+    ],
+    "fa_per_h": [
+     0.0,
+     1.455093036349933
+    ]
+   },
+   "per_fold": {
+    "sensitivity": [
+     0.9981776765375855,
+     0.0036446469248291534
+    ],
+    "specificity": [
+     0.998569253252394,
+     0.0020249190534039193
+    ],
+    "f1": [
+     0.9982814943601414,
+     0.0017792974218720618
+    ],
+    "fa_per_h": [
+     0.6178792569036302,
+     0.8788176580419652
+    ]
+   },
+   "fold_info": [
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 21,
+     "tflite_int8_bytes": 19272,
+     "threshold": 0.51,
+     "seconds": 48.60283041000366
+    },
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 40,
+     "threshold": 0.5,
+     "seconds": 82.80898880958557
+    },
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 25,
+     "threshold": 0.91,
+     "seconds": 54.38579797744751
+    },
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 30,
+     "threshold": 0.51,
+     "seconds": 66.50790858268738
+    },
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 32,
+     "threshold": 0.5,
+     "seconds": 66.95019102096558
+    }
+   ]
+  },
+  "cnn": {
+   "falls": 2346,
+   "detected": 2346,
+   "sensitivity": 1.0,
+   "adl_recordings": 2711,
+   "adl_with_alarm": 5,
+   "specificity": 0.9981556621172999,
+   "f1": 0.9989354907387694,
+   "false_alarms": 5,
+   "adl_hours": 6.296161111111111,
+   "fa_per_h": 0.794134697597919,
+   "fa_per_h_ci95": [
+    0.25785337469420583,
+    1.8532454734570014
+   ],
+   "alarms_before_impact": 0,
+   "latency_s": {
+    "median": 0.8199999999999994,
+    "p95": 1.0999999999999996,
+    "within_1s": 0.8482523444160273
+   },
+   "bootstrap_ci95": {
+    "sensitivity": [
+     1.0,
+     1.0
+    ],
+    "specificity": [
+     0.9959361599125564,
+     1.0
+    ],
+    "fa_per_h": [
+     0.0,
+     1.779172715559571
+    ]
+   },
+   "per_fold": {
+    "sensitivity": [
+     1.0,
+     0.0
+    ],
+    "specificity": [
+     0.9982238301090434,
+     0.0026774342430319203
+    ],
+    "f1": [
+     0.9990043355406485,
+     0.0014965969880688127
+    ],
+    "fa_per_h": [
+     0.7679592995930646,
+     1.163045329660397
+    ]
+   },
+   "fold_info": [
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 21,
+     "tflite_int8_bytes": 19272,
+     "threshold": 0.51,
+     "seconds": 48.60283041000366
+    },
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 40,
+     "threshold": 0.5,
+     "seconds": 82.80898880958557
+    },
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 25,
+     "threshold": 0.91,
+     "seconds": 54.38579797744751
+    },
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 30,
+     "threshold": 0.51,
+     "seconds": 66.50790858268738
+    },
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 32,
+     "threshold": 0.5,
+     "seconds": 66.95019102096558
+    }
+   ]
+  },
+  "cnn_noaug": {
+   "falls": 2346,
+   "detected": 2344,
+   "sensitivity": 0.9991474850809889,
+   "adl_recordings": 2711,
+   "adl_with_alarm": 4,
+   "specificity": 0.9985245296938399,
+   "f1": 0.9987217724755005,
+   "false_alarms": 4,
+   "adl_hours": 6.296161111111111,
+   "fa_per_h": 0.6353077580783352,
+   "fa_per_h_ci95": [
+    0.1730999817814369,
+    1.626640185132797
+   ],
+   "alarms_before_impact": 0,
+   "latency_s": {
+    "median": 0.8199999999999998,
+    "p95": 1.0999999999999996,
+    "within_1s": 0.8447098976109215
+   },
+   "bootstrap_ci95": {
+    "sensitivity": [
+     0.9978695980902503,
+     1.0
+    ],
+    "specificity": [
+     0.9966250009529868,
+     1.0
+    ],
+    "fa_per_h": [
+     0.0,
+     1.4684557294511797
+    ]
+   },
+   "per_fold": {
+    "sensitivity": [
+     0.9992248062015504,
+     0.0015503875968992276
+    ],
+    "specificity": [
+     0.9985878306315321,
+     0.0012806844284506504
+    ],
+    "f1": [
+     0.9987969627358823,
+     0.0011341296533290076
+    ],
+    "fa_per_h": [
+     0.6055384210360684,
+     0.5483222649565254
+    ]
+   },
+   "fold_info": [
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 17,
+     "tflite_int8_bytes": 19640,
+     "threshold": 0.5,
+     "seconds": 34.775898456573486
+    },
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 36,
+     "threshold": 0.5,
+     "seconds": 70.71921968460083
+    },
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 20,
+     "threshold": 0.95,
+     "seconds": 44.904982805252075
+    },
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 23,
+     "threshold": 0.9,
+     "seconds": 45.15611219406128
+    },
+    {
+     "params": 7169,
+     "macs": 348688,
+     "epochs_run": 30,
+     "threshold": 0.5,
+     "seconds": 62.01934885978699
+    }
+   ]
+  },
+  "cnn_acc": {
+   "falls": 2346,
+   "detected": 2346,
+   "sensitivity": 1.0,
+   "adl_recordings": 2711,
+   "adl_with_alarm": 4,
+   "specificity": 0.9985245296938399,
+   "f1": 0.9991482112436115,
+   "false_alarms": 4,
+   "adl_hours": 6.296161111111111,
+   "fa_per_h": 0.6353077580783352,
+   "fa_per_h_ci95": [
+    0.1730999817814369,
+    1.626640185132797
+   ],
+   "alarms_before_impact": 0,
+   "latency_s": {
+    "median": 0.8399999999999999,
+    "p95": 1.1149999999999993,
+    "within_1s": 0.8303495311167945
+   },
+   "bootstrap_ci95": {
+    "sensitivity": [
+     1.0,
+     1.0
+    ],
+    "specificity": [
+     0.9959287150193176,
+     1.0
+    ],
+    "fa_per_h": [
+     0.0,
+     1.7651705392189618
+    ]
+   },
+   "per_fold": {
+    "sensitivity": [
+     1.0,
+     0.0
+    ],
+    "specificity": [
+     0.9986183074265977,
+     0.0027633851468048306
+    ],
+    "f1": [
+     0.9992277992277993,
+     0.0015444015444015414
+    ],
+    "fa_per_h": [
+     0.6003201707577375,
+     1.200640341515475
+    ]
+   },
+   "fold_info": [
+    {
+     "params": 6833,
+     "macs": 305680,
+     "epochs_run": 33,
+     "tflite_int8_bytes": 19392,
+     "threshold": 0.5,
+     "seconds": 72.49011659622192
+    },
+    {
+     "params": 6833,
+     "macs": 305680,
+     "epochs_run": 31,
+     "threshold": 0.5,
+     "seconds": 67.75770401954651
+    },
+    {
+     "params": 6833,
+     "macs": 305680,
+     "epochs_run": 18,
+     "threshold": 0.88,
+     "seconds": 40.85923171043396
+    },
+    {
+     "params": 6833,
+     "macs": 305680,
+     "epochs_run": 30,
+     "threshold": 0.55,
+     "seconds": 62.461060523986816
+    },
+    {
+     "params": 6833,
+     "macs": 305680,
+     "epochs_run": 32,
+     "threshold": 0.5,
+     "seconds": 69.52762985229492
+    }
+   ]
+  },
+  "cnn_w64": {
+   "falls": 2346,
+   "detected": 2343,
+   "sensitivity": 0.9987212276214834,
+   "adl_recordings": 2711,
+   "adl_with_alarm": 6,
+   "specificity": 0.9977867945407599,
+   "f1": 0.9980830670926518,
+   "false_alarms": 6,
+   "adl_hours": 6.296161111111111,
+   "fa_per_h": 0.9529616371175028,
+   "fa_per_h_ci95": [
+    0.34972012542771047,
+    2.074196290732151
+   ],
+   "alarms_before_impact": 0,
+   "latency_s": {
+    "median": 0.7800000000000002,
+    "p95": 1.0599999999999996,
+    "within_1s": 0.8834827144686299
+   },
+   "bootstrap_ci95": {
+    "sensitivity": [
+     0.996113947671751,
+     1.0
+    ],
+    "specificity": [
+     0.9947591223807731,
+     1.0
+    ],
+    "fa_per_h": [
+     0.0,
+     2.284537705253448
+    ]
+   },
+   "per_fold": {
+    "sensitivity": [
+     0.9988047808764939,
+     0.00239043824701195
+    ],
+    "specificity": [
+     0.9978784069656929,
+     0.0033453771480027876
+    ],
+    "f1": [
+     0.9982128155591573,
+     0.0018712626925301936
+    ],
+    "fa_per_h": [
+     0.9180393422824988,
+     1.4536920428043412
+    ]
+   },
+   "fold_info": [
+    {
+     "params": 7169,
+     "macs": 174608,
+     "epochs_run": 27,
+     "tflite_int8_bytes": 19728,
+     "threshold": 0.5,
+     "seconds": 52.81600546836853
+    },
+    {
+     "params": 7169,
+     "macs": 174608,
+     "epochs_run": 24,
+     "threshold": 0.53,
+     "seconds": 45.8904070854187
+    },
+    {
+     "params": 7169,
+     "macs": 174608,
+     "epochs_run": 30,
+     "threshold": 0.95,
+     "seconds": 55.56093955039978
+    },
+    {
+     "params": 7169,
+     "macs": 174608,
+     "epochs_run": 18,
+     "threshold": 0.64,
+     "seconds": 34.68042874336243
+    },
+    {
+     "params": 7169,
+     "macs": 174608,
+     "epochs_run": 19,
+     "threshold": 0.5,
+     "seconds": 37.85123896598816
+    }
+   ]
+  },
+  "cnn_w192": {
+   "falls": 2346,
+   "detected": 2346,
+   "sensitivity": 1.0,
+   "adl_recordings": 2711,
+   "adl_with_alarm": 6,
+   "specificity": 0.9977867945407599,
+   "f1": 0.9987228607918263,
+   "false_alarms": 6,
+   "adl_hours": 6.296161111111111,
+   "fa_per_h": 0.9529616371175028,
+   "fa_per_h_ci95": [
+    0.34972012542771047,
+    2.074196290732151
+   ],
+   "alarms_before_impact": 0,
+   "latency_s": {
+    "median": 0.9199999999999999,
+    "p95": 1.8599999999999999,
+    "within_1s": 0.6423699914748509
+   },
+   "bootstrap_ci95": {
+    "sensitivity": [
+     1.0,
+     1.0
+    ],
+    "specificity": [
+     0.9948297019575607,
+     1.0
+    ],
+    "fa_per_h": [
+     0.0,
+     2.255370095951988
+    ]
+   },
+   "per_fold": {
+    "sensitivity": [
+     1.0,
+     0.0
+    ],
+    "specificity": [
+     0.9979367498294656,
+     0.0033500110573191563
+    ],
+    "f1": [
+     0.9988366748705844,
+     0.0018692930063937713
+    ],
+    "fa_per_h": [
+     0.8943098382028252,
+     1.4557685995679417
+    ]
+   },
+   "fold_info": [
+    {
+     "params": 7169,
+     "macs": 522768,
+     "epochs_run": 30,
+     "tflite_int8_bytes": 19728,
+     "threshold": 0.6,
+     "seconds": 74.51085424423218
+    },
+    {
+     "params": 7169,
+     "macs": 522768,
+     "epochs_run": 40,
+     "threshold": 0.5,
+     "seconds": 100.0768392086029
+    },
+    {
+     "params": 7169,
+     "macs": 522768,
+     "epochs_run": 18,
+     "threshold": 0.91,
+     "seconds": 45.35491919517517
+    },
+    {
+     "params": 7169,
+     "macs": 522768,
+     "epochs_run": 30,
+     "threshold": 0.52,
+     "seconds": 69.83993792533875
+    },
+    {
+     "params": 7169,
+     "macs": 522768,
+     "epochs_run": 25,
+     "threshold": 0.52,
+     "seconds": 65.8327248096466
+    }
+   ]
+  },
+  "rf": {
+   "falls": 2346,
+   "detected": 2342,
+   "sensitivity": 0.9982949701619779,
+   "adl_recordings": 2711,
+   "adl_with_alarm": 0,
+   "specificity": 1.0,
+   "f1": 0.9991467576791809,
+   "false_alarms": 0,
+   "adl_hours": 6.296161111111111,
+   "fa_per_h": 0.0,
+   "fa_per_h_ci95": [
+    0.0,
+    0.5858934339535893
+   ],
+   "alarms_before_impact": 0,
+   "latency_s": {
+    "median": 0.8599999999999994,
+    "p95": 1.1399999999999997,
+    "within_1s": 0.7959009393680615
+   },
+   "bootstrap_ci95": {
+    "sensitivity": [
+     0.995741056218058,
+     1.0
+    ],
+    "specificity": [
+     1.0,
+     1.0
+    ],
+    "fa_per_h": [
+     0.0,
+     0.0
+    ]
+   },
+   "per_fold": {
+    "sensitivity": [
+     0.9983198288259848,
+     0.002067987476560264
+    ],
+    "specificity": [
+     1.0,
+     0.0
+    ],
+    "f1": [
+     0.9991581357462078,
+     0.001036204322990348
+    ],
+    "fa_per_h": [
+     0.0,
+     0.0
+    ]
+   },
+   "fold_info": [
+    {
+     "nodes": 49496,
+     "threshold": 0.53,
+     "seconds": 22.542991638183594
+    },
+    {
+     "nodes": 45972,
+     "threshold": 0.21,
+     "seconds": 22.130504846572876
+    },
+    {
+     "nodes": 46062,
+     "threshold": 0.94,
+     "seconds": 23.023595809936523
+    },
+    {
+     "nodes": 39564,
+     "threshold": 0.75,
+     "seconds": 21.433176517486572
+    },
+    {
+     "nodes": 42926,
+     "threshold": 0.7,
+     "seconds": 21.969173192977905
+    }
+   ]
+  },
+  "thr": {
+   "falls": 2346,
+   "detected": 2345,
+   "sensitivity": 0.9995737425404945,
+   "adl_recordings": 2711,
+   "adl_with_alarm": 6,
+   "specificity": 0.9977867945407599,
+   "f1": 0.9985096870342772,
+   "false_alarms": 6,
+   "adl_hours": 6.296161111111111,
+   "fa_per_h": 0.9529616371175028,
+   "fa_per_h_ci95": [
+    0.34972012542771047,
+    2.074196290732151
+   ],
+   "alarms_before_impact": 0,
+   "latency_s": {
+    "median": 3.08,
+    "p95": 3.12,
+    "within_1s": 0.014072494669509595
+   },
+   "bootstrap_ci95": {
+    "sensitivity": [
+     0.9987168520102652,
+     1.0
+    ],
+    "specificity": [
+     0.995143590527201,
+     0.9996330376119885
+    ],
+    "fa_per_h": [
+     0.15696390393705623,
+     2.117131017528415
+    ]
+   },
+   "per_fold": {
+    "sensitivity": [
+     0.9996124031007753,
+     0.0007751937984496137
+    ],
+    "specificity": [
+     0.9978369829136856,
+     0.002528447044016064
+    ],
+    "f1": [
+     0.9985828214524182,
+     0.001779800829588856
+    ],
+    "fa_per_h": [
+     0.9282663767052217,
+     1.099658698604302
+    ]
+   },
+   "fold_info": [
+    {
+     "uft": 1.8,
+     "ang": 60,
+     "train_f1": 0.9986845566956064,
+     "seconds": 4.63650107383728
+    },
+    {
+     "uft": 1.8,
+     "ang": 60,
+     "train_f1": 0.9986900707361803,
+     "seconds": 4.4498865604400635
+    },
+    {
+     "uft": 1.8,
+     "ang": 60,
+     "train_f1": 0.9984260230849947,
+     "seconds": 5.3771867752075195
+    },
+    {
+     "uft": 1.8,
+     "ang": 45,
+     "train_f1": 0.9994538503549972,
+     "seconds": 4.674831867218018
+    },
+    {
+     "uft": 1.8,
+     "ang": 60,
+     "train_f1": 0.9983748645720477,
+     "seconds": 4.758160829544067
+    }
+   ]
+  }
+ },
+ "mcnemar_vs_cnn": {
+  "cnn_consec1": {
+   "only_first_correct": 1,
+   "only_second_correct": 0,
+   "p": 1.0
+  },
+  "cnn_consec3": {
+   "only_first_correct": 4,
+   "only_second_correct": 1,
+   "p": 0.375
+  },
+  "cnn_noaug": {
+   "only_first_correct": 4,
+   "only_second_correct": 3,
+   "p": 1.0
+  },
+  "cnn_acc": {
+   "only_first_correct": 2,
+   "only_second_correct": 3,
+   "p": 1.0
+  },
+  "cnn_w64": {
+   "only_first_correct": 8,
+   "only_second_correct": 4,
+   "p": 0.3876953125
+  },
+  "cnn_w192": {
+   "only_first_correct": 3,
+   "only_second_correct": 2,
+   "p": 1.0
+  },
+  "rf": {
+   "only_first_correct": 4,
+   "only_second_correct": 5,
+   "p": 1.0
+  },
+  "thr": {
+   "only_first_correct": 6,
+   "only_second_correct": 4,
+   "p": 0.75390625
+  }
+ },
+ "rotation": {
+  "cnn": {
+   "0": {
+    "falls": 2346,
+    "detected": 2346,
+    "sensitivity": 1.0,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 5,
+    "specificity": 0.9981556621172999,
+    "f1": 0.9989354907387694,
+    "false_alarms": 5,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 0.794134697597919,
+    "fa_per_h_ci95": [
+     0.25785337469420583,
+     1.8532454734570014
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 0.8199999999999994,
+     "p95": 1.0999999999999996,
+     "within_1s": 0.8482523444160273
+    }
+   },
+   "10": {
+    "falls": 2346,
+    "detected": 2346,
+    "sensitivity": 1.0,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 3,
+    "specificity": 0.99889339727038,
+    "f1": 0.9993610223642173,
+    "false_alarms": 3,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 0.4764808185587514,
+    "fa_per_h_ci95": [
+     0.09826179984559219,
+     1.3924791495996398
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 0.8199999999999994,
+     "p95": 1.0999999999999996,
+     "within_1s": 0.8448422847399829
+    }
+   },
+   "20": {
+    "falls": 2346,
+    "detected": 2344,
+    "sensitivity": 0.9991474850809889,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 4,
+    "specificity": 0.9985245296938399,
+    "f1": 0.9987217724755005,
+    "false_alarms": 4,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 0.6353077580783352,
+    "fa_per_h_ci95": [
+     0.1730999817814369,
+     1.626640185132797
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 0.8199999999999994,
+     "p95": 1.0999999999999996,
+     "within_1s": 0.8391638225255973
+    }
+   },
+   "30": {
+    "falls": 2346,
+    "detected": 2344,
+    "sensitivity": 0.9991474850809889,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 7,
+    "specificity": 0.9974179269642198,
+    "f1": 0.998083883329785,
+    "false_alarms": 7,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 1.1117885766370865,
+    "fa_per_h_ci95": [
+     0.44699667016989697,
+     2.290709387383695
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 0.8199999999999998,
+     "p95": 1.0999999999999996,
+     "within_1s": 0.8327645051194539
+    }
+   },
+   "45": {
+    "falls": 2346,
+    "detected": 2315,
+    "sensitivity": 0.9867860187553282,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 45,
+    "specificity": 0.983400959055699,
+    "f1": 0.9838504037399065,
+    "false_alarms": 45,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 7.1472122783812715,
+    "fa_per_h_ci95": [
+     5.213225679741539,
+     9.563532354770487
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 0.8199999999999998,
+     "p95": 1.1199999999999992,
+     "within_1s": 0.8289416846652268
+    }
+   }
+  },
+  "cnn_noaug": {
+   "0": {
+    "falls": 2346,
+    "detected": 2344,
+    "sensitivity": 0.9991474850809889,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 4,
+    "specificity": 0.9985245296938399,
+    "f1": 0.9987217724755005,
+    "false_alarms": 4,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 0.6353077580783352,
+    "fa_per_h_ci95": [
+     0.1730999817814369,
+     1.626640185132797
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 0.8199999999999998,
+     "p95": 1.0999999999999996,
+     "within_1s": 0.8447098976109215
+    }
+   },
+   "10": {
+    "falls": 2346,
+    "detected": 2344,
+    "sensitivity": 0.9991474850809889,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 7,
+    "specificity": 0.9974179269642198,
+    "f1": 0.998083883329785,
+    "false_alarms": 7,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 1.1117885766370865,
+    "fa_per_h_ci95": [
+     0.44699667016989697,
+     2.290709387383695
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 0.8299999999999998,
+     "p95": 1.0999999999999996,
+     "within_1s": 0.8383105802047781
+    }
+   },
+   "20": {
+    "falls": 2346,
+    "detected": 2338,
+    "sensitivity": 0.9965899403239556,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 23,
+    "specificity": 0.9915160457395795,
+    "f1": 0.9934140641597621,
+    "false_alarms": 23,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 3.6530196089504274,
+    "fa_per_h_ci95": [
+     2.3157010724065916,
+     5.481323029350288
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 0.8399999999999994,
+     "p95": 1.1,
+     "within_1s": 0.8297690333618477
+    }
+   },
+   "30": {
+    "falls": 2346,
+    "detected": 2318,
+    "sensitivity": 0.9880647911338448,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 101,
+    "specificity": 0.9627443747694577,
+    "f1": 0.9729275970619098,
+    "false_alarms": 104,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 16.518001710036714,
+    "fa_per_h_ci95": [
+     13.496404366173289,
+     20.014323771452414
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 0.8399999999999999,
+     "p95": 1.1399999999999997,
+     "within_1s": 0.8032786885245902
+    }
+   },
+   "45": {
+    "falls": 2346,
+    "detected": 2221,
+    "sensitivity": 0.9467178175618073,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 294,
+    "specificity": 0.8915529324972334,
+    "f1": 0.9138037440855792,
+    "false_alarms": 317,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 50.34813982770807,
+    "fa_per_h_ci95": [
+     44.95762075758227,
+     56.20702199584852
+    ],
+    "alarms_before_impact": 1,
+    "latency_s": {
+     "median": 0.8599999999999994,
+     "p95": 1.1999999999999997,
+     "within_1s": 0.7744259342638451
+    }
+   }
+  },
+  "rf": {
+   "0": {
+    "falls": 2346,
+    "detected": 2342,
+    "sensitivity": 0.9982949701619779,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 0,
+    "specificity": 1.0,
+    "f1": 0.9991467576791809,
+    "false_alarms": 0,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 0.0,
+    "fa_per_h_ci95": [
+     0.0,
+     0.5858934339535893
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 0.8599999999999994,
+     "p95": 1.1399999999999997,
+     "within_1s": 0.7959009393680615
+    }
+   },
+   "10": {
+    "falls": 2346,
+    "detected": 2344,
+    "sensitivity": 0.9991474850809889,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 0,
+    "specificity": 1.0,
+    "f1": 0.9995735607675906,
+    "false_alarms": 0,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 0.0,
+    "fa_per_h_ci95": [
+     0.0,
+     0.5858934339535893
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 0.8599999999999994,
+     "p95": 1.1199999999999997,
+     "within_1s": 0.8007679180887372
+    }
+   },
+   "20": {
+    "falls": 2346,
+    "detected": 2340,
+    "sensitivity": 0.9974424552429667,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 1,
+    "specificity": 0.99963113242346,
+    "f1": 0.9985065073607851,
+    "false_alarms": 1,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 0.1588269395195838,
+    "fa_per_h_ci95": [
+     0.004021149957489244,
+     0.8849270678773412
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 0.8599999999999994,
+     "p95": 1.1399999999999997,
+     "within_1s": 0.7991452991452992
+    }
+   },
+   "30": {
+    "falls": 2346,
+    "detected": 2336,
+    "sensitivity": 0.9957374254049446,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 14,
+    "specificity": 0.9948358539284397,
+    "f1": 0.9948892674616694,
+    "false_alarms": 15,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 2.382404092793757,
+    "fa_per_h_ci95": [
+     1.333413485555128,
+     3.929413246402748
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 0.8599999999999994,
+     "p95": 1.1399999999999997,
+     "within_1s": 0.802654109589041
+    }
+   },
+   "45": {
+    "falls": 2346,
+    "detected": 2302,
+    "sensitivity": 0.9812446717817562,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 116,
+    "specificity": 0.9572113611213574,
+    "f1": 0.966414777497901,
+    "false_alarms": 126,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 20.01219437946756,
+    "fa_per_h_ci95": [
+     16.67069235676623,
+     23.82706698894567
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 0.8399999999999999,
+     "p95": 1.1799999999999997,
+     "within_1s": 0.7980017376194614
+    }
+   }
+  },
+  "thr": {
+   "0": {
+    "falls": 2346,
+    "detected": 2345,
+    "sensitivity": 0.9995737425404945,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 6,
+    "specificity": 0.9977867945407599,
+    "f1": 0.9985096870342772,
+    "false_alarms": 6,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 0.9529616371175028,
+    "fa_per_h_ci95": [
+     0.34972012542771047,
+     2.074196290732151
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 3.08,
+     "p95": 3.12,
+     "within_1s": 0.014072494669509595
+    }
+   },
+   "10": {
+    "falls": 2346,
+    "detected": 2345,
+    "sensitivity": 0.9995737425404945,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 8,
+    "specificity": 0.9970490593876798,
+    "f1": 0.9980846988721004,
+    "false_alarms": 8,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 1.2706155161566703,
+    "fa_per_h_ci95": [
+     0.5485615942472267,
+     2.503619100911399
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 3.08,
+     "p95": 3.12,
+     "within_1s": 0.014072494669509595
+    }
+   },
+   "20": {
+    "falls": 2346,
+    "detected": 2339,
+    "sensitivity": 0.9970161977834612,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 9,
+    "specificity": 0.9966801918111398,
+    "f1": 0.9965913932680017,
+    "false_alarms": 9,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 1.4294424556762542,
+    "fa_per_h_ci95": [
+     0.6536321140378308,
+     2.7135270444825283
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 3.08,
+     "p95": 3.12,
+     "within_1s": 0.01410859341598974
+    }
+   },
+   "30": {
+    "falls": 2346,
+    "detected": 2281,
+    "sensitivity": 0.9722932651321398,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 15,
+    "specificity": 0.9944669863518997,
+    "f1": 0.98276604911676,
+    "false_alarms": 15,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 2.382404092793757,
+    "fa_per_h_ci95": [
+     1.333413485555128,
+     3.929413246402748
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 3.08,
+     "p95": 3.12,
+     "within_1s": 0.01446733888645331
+    }
+   },
+   "45": {
+    "falls": 2346,
+    "detected": 2045,
+    "sensitivity": 0.8716965046888321,
+    "adl_recordings": 2711,
+    "adl_with_alarm": 68,
+    "specificity": 0.9749170047952785,
+    "f1": 0.9172460192868357,
+    "false_alarms": 69,
+    "adl_hours": 6.296161111111111,
+    "fa_per_h": 10.959058826851283,
+    "fa_per_h_ci95": [
+     8.526801905069199,
+     13.869390340240967
+    ],
+    "alarms_before_impact": 0,
+    "latency_s": {
+     "median": 3.08,
+     "p95": 3.12,
+     "within_1s": 0.015647921760391197
+    }
+   }
+  }
+ }
+}
