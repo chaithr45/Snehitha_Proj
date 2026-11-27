@@ -663,7 +663,7 @@ const Setup = {
       h("section", { class: "step" },
         h("h2", {}, "3. Connect the device to Wi-Fi"),
         h("ol", {},
-          h("li", {}, "Power the device. On first start (or when you hold the button while it starts) it opens its own Wi-Fi network called ", h("strong", {}, "WorkerSafety-XXXX"), " and its LED blinks fast."),
+          h("li", {}, "Power the device. On its first start it opens its own Wi-Fi network called ", h("strong", {}, "WorkerSafety-XXXX"), " and its LED blinks fast. To return to this mode later, hold the button for 10 s (not while plugging it in: that starts the chip's flashing mode)."),
           h("li", {}, "Join that network with your phone. The setup page opens by itself; if not, go to ", h("code", {}, "http://192.168.4.1"), "."),
           h("li", {}, "Choose your Wi-Fi network, enter its password, the server address from step 1 and the worker's name, then Save."),
           h("li", {}, "The device restarts, joins your Wi-Fi and appears on the Overview page within a few seconds. Its LED blinks slowly when it is connected."))),

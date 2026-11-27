@@ -34,19 +34,19 @@ abnormal vital signs entirely on an ESP32 microcontroller and delivers acknowled
 to a supervisor's web application. Fall detection uses a 7{,}169-parameter
 one-dimensional CNN, quantised to int8 (18.6\,kB), on 2.56\,s windows of a waist-worn
 inertial sensor evaluated every 0.5\,s. In 5-fold subject-wise cross-validation on all
-5{,}057 recordings of the 32 KFall subjects, replayed exactly as the device processes
-them, the model detected 2{,}346 of 2{,}346 falls (95\,\% CI 99.84--100\,\%) with 5 false
+5{,}057 recordings of the 32 KFall subjects, replayed as the device processes them, the
+model detected 2{,}346 of 2{,}346 falls (95\,\% CI 99.84--100\,\%) with 5 false
 alarms in 6.3\,h of daily activities (0.79/h) and a median of 0.82\,s from impact to
 alarm. A random forest and an impact-plus-posture threshold rule were statistically
 indistinguishable on this benchmark (exact McNemar $p \geq 0.38$), so we report what does
 separate them: with the sensor mounted 45$^\circ$ away from the training orientation the
 augmented CNN still detected 98.7\,\% of falls at 7.1 false alarms/h, against 94.7\,\% and
 50.3/h without augmentation and 87.2\,\% for the threshold rule, which also needs
-2.3\,s longer to alarm. A two-pose calibration on the device removes most of that
-misalignment. The firmware is verified without hardware: its C signal chain reproduces the
-Python reference decision-for-decision, the int8 model runs bit-exactly in an ESP32
-emulator, and a 250\,s scripted scenario passes end to end, including a supervisor outage.
-Code, firmware and web application are released.
+2.3\,s longer to alarm; a two-pose calibration on the device is provided to limit such
+misalignment. Without hardware, the firmware's C signal chain reproduces the Python
+reference decision for decision, the int8 model runs bit-exactly in an ESP32 emulator, and
+a scripted end-to-end scenario passes, including a supervisor outage. Code, firmware and
+web application are released.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -282,8 +282,9 @@ mounted rotated. Up to 30$^\circ$ the augmented CNN keeps 99.9\,\% sensitivity a
 whereas the same network without augmentation falls to 94.7\,\% and 50.3/h, the random
 forest (whose features include absolute tilt) to 98.1\,\% and 20.0/h, and the threshold
 rule to 87.2\,\% and 11.0/h. At 0$^\circ$ augmentation makes no significant difference (McNemar $p = 1$); beyond
-20$^\circ$ it is decisive; the on-device calibration of Section~\ref{sec:cal} keeps a worn device
-near the left end of these curves.
+20$^\circ$ it is decisive. The on-device calibration of Section~\ref{sec:cal} is meant to
+keep a worn device near the left end of these curves; its residual error on worn devices
+remains to be measured.
 
 \begin{figure}[t]
 \centering
@@ -337,8 +338,9 @@ Because all detectors saturate on KFall, cross-dataset evaluation (for example o
 SisFall~\cite{sucerquia2017sisfall}, which the pipeline supports) and recordings from the
 device itself are the most important next steps. The vital-sign estimators were checked on
 synthetic signals only and are not clinically validated. The orientation calibration
-assumes a still upright stance and a clean forward bend; residual errors of a few degrees
-are covered by augmentation, as Fig.~\ref{fig:robust} shows. Finally, inference time and
+assumes a still upright stance and a clean forward bend; Fig.~\ref{fig:robust} shows
+that residual errors up to about 20$^\circ$ cost little, but this has yet to be confirmed on worn
+devices. Finally, inference time and
 battery life must be measured on boards, and the system has not yet been worn in a field
 trial. A demonstration feature replays a recorded synthetic fall into the sensor stream so
 that the full alert chain can be shown safely; it must be disabled in deployed devices.
