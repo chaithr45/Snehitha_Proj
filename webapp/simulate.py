@@ -96,7 +96,8 @@ class SimDevice:
             self.hr += (self.hr_target - self.hr) * 0.25 + self.rng.uniform(-1.2, 1.2)
             self.spo2 = min(99.5, max(85.0, self.spo2 + self.rng.uniform(-0.3, 0.3)))
             if self.state == "NORMAL" and not self.fault:
-                self.moving = self.rng.random() < 0.3
+                if self.rng.random() < 0.06:          # stretches of activity lasting tens of seconds
+                    self.moving = not self.moving
                 self.motion = self.rng.uniform(0.15, 0.35) if self.moving else self.rng.uniform(0.02, 0.08)
                 self.tilt = self.rng.uniform(3, 15)
             self.flush()

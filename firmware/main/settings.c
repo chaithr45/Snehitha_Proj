@@ -74,6 +74,11 @@ void settings_init(void)
     if (!s.calibrated) {
         identity(s.rot);
     }
+    uint8_t ok = 1;   // settings from menuconfig only: never force setup mode
+    if (h) {
+        nvs_get_u8(h, "net_ok", &ok);
+    }
+    s.net_verified = ok != 0;
     if (h) {
         nvs_close(h);
     }
@@ -113,6 +118,7 @@ esp_err_t settings_save_network(const char *ssid, const char *pass, const char *
     err = err == ESP_OK ? nvs_set_str(h, "server", server) : err;
     err = err == ESP_OK ? nvs_set_str(h, "worker", name) : err;
     err = err == ESP_OK ? nvs_set_str(h, "token", token) : err;
+    err = err == ESP_OK ? nvs_set_u8(h, "net_ok", 0) : err;
     err = err == ESP_OK ? nvs_commit(h) : err;
     nvs_close(h);
     if (err == ESP_OK) {
@@ -121,9 +127,52 @@ esp_err_t settings_save_network(const char *ssid, const char *pass, const char *
         strlcpy(s.server, server, sizeof(s.server));
         strlcpy(s.worker, name[0] ? name : s_id, sizeof(s.worker));
         strlcpy(s.token, token, sizeof(s.token));
+        s.net_verified = false;
     }
     return err;
 }
+
+static void set_flag(const char *key, uint8_t v)
+{
+    nvs_handle_t h;
+    if (open_rw(&h) == ESP_OK) {
+        nvs_set_u8(h, key, v);
+        nvs_commit(h);
+        nvs_close(h);
+    }
+}
+
+static bool take_flag(const char *key)
+{
+    nvs_handle_t h;
+    uint8_t v = 0;
+    if (nvs_open(NS, NVS_READWRITE, &h) != ESP_OK) {
+        return false;
+    }
+    if (nvs_get_u8(h, key, &v) == ESP_OK && v) {
+        nvs_erase_key(h, key);
+        nvs_commit(h);
+    }
+    nvs_close(h);
+    return v != 0;
+}
+
+void settings_mark_network_ok(void)
+{
+    if (!s.net_verified) {
+        set_flag("net_ok", 1);
+        s.net_verified = true;
+        ESP_LOGI(TAG, "Wi-Fi settings confirmed");
+    }
+}
+
+void settings_join_failed_restart(void)
+{
+    set_flag("join_fail", 1);
+    settings_request_setup_and_restart();
+}
+
+bool settings_take_join_failed(void) { return take_flag("join_fail"); }
 
 esp_err_t settings_save_rotation(const float rot[9])
 {
@@ -159,27 +208,9 @@ esp_err_t settings_clear_rotation(void)
 
 void settings_request_setup_and_restart(void)
 {
-    nvs_handle_t h;
-    if (open_rw(&h) == ESP_OK) {
-        nvs_set_u8(h, "setup", 1);
-        nvs_commit(h);
-        nvs_close(h);
-    }
+    set_flag("setup", 1);
     ESP_LOGW(TAG, "restarting into setup mode");
     esp_restart();
 }
 
-bool settings_take_setup_request(void)
-{
-    nvs_handle_t h;
-    uint8_t v = 0;
-    if (nvs_open(NS, NVS_READWRITE, &h) != ESP_OK) {
-        return false;
-    }
-    if (nvs_get_u8(h, "setup", &v) == ESP_OK && v) {
-        nvs_erase_key(h, "setup");
-        nvs_commit(h);
-    }
-    nvs_close(h);
-    return v != 0;
-}
+bool settings_take_setup_request(void) { return take_flag("setup"); }

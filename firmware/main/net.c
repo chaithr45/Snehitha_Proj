@@ -41,6 +41,7 @@
 #define ACK_TRACK 32          // delivered alerts waiting for an acknowledgment
 #define ACK_POLL_MS 3000      // status poll while an acknowledgment is outstanding
 #define BACKOFF_MAX_MS 30000
+#define JOIN_TIMEOUT_US (90LL * 1000000)   // new Wi-Fi settings must work within 90 s
 #define BIT_UP BIT0           // network has an IP address
 #define BIT_IDLE BIT1         // queue empty
 
@@ -371,6 +372,17 @@ static void task(void *arg)
     uint32_t backoff_ms = 1000;
     int64_t next_status = 0;
     for (;;) {
+#if CONFIG_SAFETY_NET_WIFI
+        if (!settings_get()->net_verified) {
+            if (xEventGroupGetBits(s_ev) & BIT_UP) {
+                settings_mark_network_ok();
+            } else if (esp_timer_get_time() > JOIN_TIMEOUT_US) {
+                ESP_LOGE(TAG, "could not join \"%s\" with the new settings: back to setup mode",
+                         settings_get()->ssid);
+                settings_join_failed_restart();
+            }
+        }
+#endif
         taskENTER_CRITICAL(&s_mux);
         const bool have = s_count > 0;
         if (have) {

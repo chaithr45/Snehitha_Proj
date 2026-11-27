@@ -1,13 +1,29 @@
 # Edge-AI Worker Safety Monitor
 
 A waist-worn wearable (ESP32 + MPU6050 IMU + MAX30102 pulse oximeter) that detects
-falls **on the device** with a tiny int8 1D-CNN, watches heart rate and SpO2, and alerts
-a supervisor over LoRa / Wi-Fi.
+falls and collapses **on the device** with a tiny int8 1D-CNN, watches heart rate and
+SpO2, and alerts a supervisor's web app over Wi-Fi.
+
+| I want to... | Go to |
+|---|---|
+| Build the real device and demo it (parts, wiring, browser flashing, phone setup) | [`HARDWARE.md`](HARDWARE.md) |
+| Run the supervisor web app (or try it with simulated workers) | `python webapp/server.py --demo 3`, then http://localhost:8080 |
+| Show a live demo without any hardware (firmware in the ESP32 emulator) | [`DEMO.md`](DEMO.md) |
+| Read the paper and its results | [`paper/main.pdf`](paper/main.pdf), [`research/RESULTS.md`](research/RESULTS.md) |
+| Change the firmware | [`firmware/README.md`](firmware/README.md) |
+| Retrain the model | *Usage* below |
 
 - **Phase 1 (model):** the training pipeline and the model files, in this folder.
-- **Phase 2 (firmware):** the ESP32 / ESP32-S3 application in [`firmware/`](firmware/README.md).
-  It is checked against the Python pipeline and in the ESP32 emulator (see the
-  *firmware* workflow under Actions), but **has not yet run on real hardware**.
+- **Phase 2 (firmware):** the ESP32 / ESP32-S3 application in [`firmware/`](firmware/README.md),
+  with a phone setup page, orientation calibration and ready-made images. It is checked
+  against the Python pipeline and in the ESP32 emulator on every push (*firmware*
+  workflow under Actions), but **has not yet run on a real board**.
+- **Supervisor web app:** [`webapp/`](webapp/README.md), Python standard library only.
+
+![Supervisor web app with simulated workers](docs/webapp_overview.png)
+
+- **Research:** [`research/`](research/RESULTS.md) (cross-validated baselines,
+  ablations, robustness) and the paper in [`paper/`](paper/main.tex).
 
 ## Contents
 
@@ -20,9 +36,13 @@ a supervisor over LoRa / Wi-Fi.
 | `results.md`, `results.json` | Metrics on unseen test subjects + 5-fold subject-wise cross-validation |
 | `evaluate_deployment.py`, `deployment_eval.*` | Device-level evaluation: false alarms per hour, time to alarm, threshold sweep |
 | `fig_training_curves.png`, `fig_roc.png`, `fig_confusion_int8.png` | Figures for the paper |
-| `firmware/` | Phase 2: ESP32 firmware, C port of the pipeline, tests, supervisor station ([README](firmware/README.md)) |
-| `docs/Project_Report.pdf`, `docs/Project_Report.docx` | Detailed project report (Phase 1 and Phase 2) |
-| `docs/Presentation.pptx`, `docs/Presentation.pdf` | 14-slide presentation with speaker notes; the name line on the title slide is editable |
+| `firmware/` | Phase 2: ESP32 firmware, C port of the pipeline, tests ([README](firmware/README.md)) |
+| `webapp/` | Supervisor web app: live dashboard, alerts and acknowledgments, history, setup page with browser flasher, simulator, tests |
+| `HARDWARE.md`, `docs/wiring.svg` | Parts list, wiring, flashing, phone setup, calibration, demo script, troubleshooting |
+| `research/` | `experiments.py` (5-fold CV of the CNN, ablations, random forest and threshold baselines, sensor-rotation robustness, statistics) and its results |
+| `paper/` | IEEE-format paper (`main.tex`, `refs.bib`, `main.pdf`) |
+| `docs/Project_Report.pdf`, `docs/Project_Report.docx` | Detailed project report (Phase 1 and Phase 2; written before the web app, hardware kit and cross-validated results) |
+| `docs/Presentation.pptx`, `docs/Presentation.pdf` | 14-slide presentation with speaker notes (same date as the report); the name line on the title slide is editable |
 | `DEMO.md` | How to run the live demo for an audience, no board needed |
 | `Snehitha_project.zip` | Original upload of Phase 1 (an earlier run, kept for reference) |
 
@@ -91,6 +111,25 @@ support (it used to take the lowest, 0.05, which doubled the false alarms).
 The heart-rate / SpO2 algorithms and the alert rules are checked only on synthetic
 signals so far: **not clinically validated**.
 
+## Cross-validated results and baselines ([`research/RESULTS.md`](research/RESULTS.md))
+
+`research/experiments.py` tests every one of the 5,057 KFall recordings once, by a
+model that never saw its subject (5-fold subject-wise CV), with the device's decision rule:
+
+| Method | Falls detected | Specificity | False alarms / h | Median time to alarm |
+|---|---|---|---|---|
+| **1D-CNN (deployed), int8 18.6 kB** | **2346 / 2346** | 99.82 % | 0.79 | 0.82 s |
+| Random forest, 38 features (~0.5 MB) | 2342 / 2346 | 100.00 % | 0.00 | 0.86 s |
+| Impact + posture thresholds | 2345 / 2346 | 99.78 % | 0.95 | 3.08 s |
+
+On KFall the three are statistically tied (exact McNemar p ≥ 0.38). What separates them
+is how the device is worn: with the sensor mounted **45° off**, the CNN still detects
+98.7 % of falls (7.1 false alarms/h), the same CNN trained without rotation augmentation
+94.7 % (50.3/h), the random forest 98.1 % (20.0/h) and the threshold rule 87.2 %. The
+firmware's two-pose calibration keeps a worn device close to 0°.
+
+![robustness](research/results/fig_robustness.png)
+
 ## Phase 2 firmware in short
 
 See [`firmware/README.md`](firmware/README.md). Beyond running the model, the device:
@@ -101,7 +140,9 @@ See [`firmware/README.md`](firmware/README.md). Beyond running the model, the de
 - reports a **frozen or missing motion sensor** to the supervisor;
 - keeps alerts in a **store-and-forward** queue until the supervisor confirms them;
 - shows the supervisor's **acknowledgment** to the worker ("help is on the way");
-- sends posture, impact force, heart rate and SpO2 with every alert.
+- sends posture, impact force, heart rate and SpO2 with every alert;
+- is configured from a phone (setup Wi-Fi network and page), calibrates its orientation
+  in two poses, and can play a safe **demo fall** (double press) for presentations.
 
 **Live demo without a board:** see [`DEMO.md`](DEMO.md). One Docker command runs the
 firmware in the ESP32 emulator in real time while the supervisor page shows the
@@ -113,13 +154,15 @@ ESP-IDF builds for ESP32 and ESP32-S3, and a 250 s scenario run in the ESP32 emu
 
 ## Still to do
 
-**On real hardware** (the software is written and tested without a board)
-- Wire the board, flash it, check sensor orientation (gravity mainly on −Y, as in KFall)
-- Measure on the device: inference time, battery life
+**On real hardware** (the software is written and tested without a board; see [`HARDWARE.md`](HARDWARE.md))
+- Build the device, flash it, calibrate it, run the demo script
+- Measure on the device: inference time (printed at boot as `MODEL BENCHMARK`; fill it
+  into the paper), battery life
 - Tune the man-down and vitals-motion settings on real workers
 - LoRa alert link (Wi-Fi works now)
 
-**Validation**
+**Validation (for the paper)**
+- Cross-dataset test on SisFall (`--dataset sisfall` is supported) and recordings from the device itself
 - Calibrate SpO2 against a reference oximeter
 - Real-world tests with the device; report false alarms per hour of wear
 - Validation subjects that are harder for the model, so the threshold choice is data-driven

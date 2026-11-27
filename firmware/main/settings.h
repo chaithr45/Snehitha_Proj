@@ -15,6 +15,7 @@ typedef struct {
     char worker[33];      // worker / device name shown on the dashboard
     char token[65];       // optional shared secret (X-Device-Token)
     bool calibrated;
+    bool net_verified;    // joined this Wi-Fi at least once since the settings were saved
     float rot[9];         // sensor frame -> KFall frame (row-major), identity if not calibrated
 } settings_t;
 
@@ -27,6 +28,13 @@ esp_err_t settings_save_network(const char *ssid, const char *pass, const char *
                                 const char *token);
 esp_err_t settings_save_rotation(const float rot[9]);
 esp_err_t settings_clear_rotation(void);
+
+// The Wi-Fi network was joined: remember it (once), so later outages never send the
+// device back to setup mode.
+void settings_mark_network_ok(void);
+// Freshly saved settings never worked: note it for the setup page and restart into setup.
+void settings_join_failed_restart(void);
+bool settings_take_join_failed(void);     // true once after such a restart
 
 // Setup mode on the next start (button held, or chosen on the setup page), then restart.
 void settings_request_setup_and_restart(void);

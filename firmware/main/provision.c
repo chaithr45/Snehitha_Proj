@@ -324,8 +324,9 @@ static esp_err_t page_save(httpd_req_t *r)
             "reports to <b>%s</b>.</p><p>Reconnect this phone to your normal Wi-Fi and open the web app: the worker "
             "appears within a few seconds. The LED flashes briefly every 2 seconds once it is connected.</p>",
          e1, e2);
-    put(r, "<p>If the LED keeps blinking fast, the device came back to setup mode: check the Wi-Fi name and "
-           "password. To return here later, hold the button for 10 seconds.</p></div></main></body></html>");
+    put(r, "<p>If the device cannot join that network within 90 seconds, it comes back to setup mode (fast "
+           "blinking LED) and this page tells you so. To return here later, hold the button for 10 seconds."
+           "</p></div></main></body></html>");
     httpd_resp_sendstr_chunk(r, NULL);
     ESP_LOGW(TAG, "settings saved, restarting");
     restart_soon();
@@ -443,9 +444,30 @@ void provision_run(bool imu_ok, bool ppg_ok)
     s_imu_ok = imu_ok;
     s_ppg_ok = ppg_ok;
     status_led_set(LED_SETUP);
+    if (settings_take_join_failed()) {
+        snprintf(s_msg, sizeof(s_msg), "The device could not join the Wi-Fi network \"%.32s\" with the saved "
+                 "settings. Check the name and password (2.4 GHz networks only).", settings_get()->ssid);
+    }
 
-    esp_netif_create_default_wifi_ap();
+    esp_netif_t *ap_netif = esp_netif_create_default_wifi_ap();
     esp_netif_create_default_wifi_sta();
+    // Hand out this device as the phones' DNS server (so the captive DNS above answers) and
+    // announce the setup page as the captive-portal address (DHCP option 114). Best effort:
+    // without it the page is still at http://192.168.4.1.
+    esp_netif_dns_info_t dns = {0};
+    dns.ip.type = ESP_IPADDR_TYPE_V4;
+    dns.ip.u_addr.ip4.addr = ESP_IP4TOADDR(192, 168, 4, 1);
+    uint32_t offer_dns = 0x02;   // OFFER_DNS
+    static char portal_uri[] = "http://192.168.4.1/";
+    esp_netif_dhcps_stop(ap_netif);
+    if (esp_netif_set_dns_info(ap_netif, ESP_NETIF_DNS_MAIN, &dns) != ESP_OK ||
+        esp_netif_dhcps_option(ap_netif, ESP_NETIF_OP_SET, ESP_NETIF_DOMAIN_NAME_SERVER, &offer_dns,
+                               sizeof(offer_dns)) != ESP_OK) {
+        ESP_LOGW(TAG, "could not offer DNS by DHCP: phones may not open the setup page by themselves");
+    }
+    esp_netif_dhcps_option(ap_netif, ESP_NETIF_OP_SET, ESP_NETIF_CAPTIVEPORTAL_URI, portal_uri,
+                           strlen(portal_uri));
+    esp_netif_dhcps_start(ap_netif);
     const wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
     uint8_t mac[6] = {0};

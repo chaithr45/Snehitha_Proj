@@ -229,6 +229,24 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(post(base, "/telemetry", {"worker": "w1"})[1].get("cmd"), "demo_fall")
         self.assertEqual(post(base, "/telemetry", {"worker": "w1"})[1].get("cmd"), None)   # delivered once
 
+    def test_firmware_manifest_for_the_browser_flasher(self):
+        base, _ = self.start()
+        tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, tmp)
+        old = server.FIRMWARE_DIR
+        server.FIRMWARE_DIR = tmp
+        self.addCleanup(setattr, server, "FIRMWARE_DIR", old)
+        self.assertEqual(get(base, "/firmware/manifest.json")[0], 404)        # nothing downloaded yet
+        with open(os.path.join(tmp, "worker_safety_esp32.bin"), "wb") as f:
+            f.write(b"\xe9" + b"\0" * 63)
+        code, text = get(base, "/firmware/manifest.json")
+        man = json.loads(text)
+        self.assertEqual(code, 200)
+        self.assertEqual(man["builds"], [{"chipFamily": "ESP32", "parts": [{"path": "worker_safety_esp32.bin", "offset": 0}]}])
+        with urllib.request.urlopen(base + "/firmware/worker_safety_esp32.bin", timeout=5) as r:
+            self.assertEqual((r.status, r.read()[:1]), (200, b"\xe9"))
+        self.assertEqual(json.loads(get(base, "/api/info")[1])["firmware"], ["ESP32"])
+
     def test_test_alert_and_rename(self):
         base, st = self.start()
         self.assertTrue(post(base, "/api/test-alert", {})[1]["ok"])
